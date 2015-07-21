@@ -11,7 +11,7 @@ abstract class AbstractController
      * Модуль, которому пренадлежит контроллер
      * @var AbstractModule
      */
-    private $_module;
+    private $module;
 
     /**
      * @var ServiceManager
@@ -21,7 +21,7 @@ abstract class AbstractController
     /**
      * @var Http\Request
      */
-    private $_request;
+    private $request;
 
     /**
      * @param AbstractModule $module
@@ -29,9 +29,9 @@ abstract class AbstractController
      */
     public function __construct(AbstractModule $module, ServiceManager $serviceManager)
     {
-        $this->_module         = $module;
+        $this->module         = $module;
         $this->_serviceManager = $serviceManager;
-        $this->_request        = $this->_serviceManager->get('Request');
+        $this->request        = $this->_serviceManager->get('Request');
     }
 
     /**
@@ -39,7 +39,7 @@ abstract class AbstractController
      */
     public function getRequest()
     {
-        return $this->_request;
+        return $this->request;
     }
 
     /**
@@ -55,7 +55,7 @@ abstract class AbstractController
      */
     public function getModule()
     {
-        return $this->_module;
+        return $this->module;
     }
 
     /**
@@ -86,7 +86,7 @@ abstract class AbstractController
             $template = $vars->get('controller') . '/' . $vars->get('action');
         }
 
-        $view = new View\Renderer($this->_module->getViewPath());
+        $view = new View\Renderer($this->module->getViewPath());
         return $view->render($template, $params);
     }
 
@@ -99,9 +99,7 @@ abstract class AbstractController
      */
     public function responseRedirect($location)
     {
-        return new Http\Response('', 200, array(
-            'Location' => $location
-        ));
+        return new Http\Response('', 200, ['Location' => $location]);
     }
 
     /**
@@ -112,9 +110,7 @@ abstract class AbstractController
      */
     public function responseJson($data, $code = 200)
     {
-        return new Http\Response(json_encode($data), $code, array(
-            'Content-type' => 'application/json'
-        ));
+        return new Http\Response(json_encode($data), $code, ['Content-type' => 'application/json']);
     }
 
     /**
@@ -126,11 +122,11 @@ abstract class AbstractController
      */
     public function responseFile($content, $mimeType, $fileName)
     {
-        return new Http\Response($content, 200, array(
+        return new Http\Response($content, 200, [
             'Content-type'        => 'application/' . $mimeType,
             'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             'Content-Length'      => strlen($content)
-        ));
+        ]);
     }
 
     /**

@@ -11,13 +11,13 @@ abstract class AbstractModule
      * Человеко-понятное название модуля
      * @var string
      */
-    protected $_title = '';
+    protected $title = '';
 
     /**
      * Путь до директории модуля
      * @var string
      */
-    protected $_basePath  = '';
+    protected $basePath  = '';
 
     /**
      * @var ServiceManager
@@ -27,17 +27,17 @@ abstract class AbstractModule
     /**
      * @var ModulesManager
      */
-    private $_modulesManager;
+    private $modulesManager;
 
     /**
      * @var Events\EventsManager;
      */
-    private $_eventsManager;
+    private $eventsManager;
 
     /**
      * @var Http\Request;
      */
-    private $_request;
+    private $request;
 
     /**
      * @param ServiceManager $serviceManager
@@ -46,9 +46,9 @@ abstract class AbstractModule
     public function __construct(ServiceManager $serviceManager, $path = '')
     {
         $this->_serviceManager = $serviceManager;
-        $this->_modulesManager = $serviceManager->get('ModulesManager');
-        $this->_eventsManager  = $serviceManager->get('EventsManager');
-        $this->_request        = $serviceManager->get('Request');
+        $this->modulesManager = $serviceManager->get('ModulesManager');
+        $this->eventsManager  = $serviceManager->get('EventsManager');
+        $this->request        = $serviceManager->get('Request');
 
         $this->setBasePath($path);
     }
@@ -60,7 +60,7 @@ abstract class AbstractModule
      */
     public function setBasePath($path)
     {
-        $this->_basePath = $path;
+        $this->basePath = $path;
         return $this;
     }
 
@@ -69,7 +69,7 @@ abstract class AbstractModule
      */
     public function getBasePath()
     {
-        return $this->_basePath;
+        return $this->basePath;
     }
 
     /**
@@ -77,7 +77,7 @@ abstract class AbstractModule
      */
     public function getConfigPath()
     {
-        return $this->_basePath . '/config';
+        return $this->basePath . '/config';
     }
 
     /**
@@ -85,7 +85,7 @@ abstract class AbstractModule
      */
     public function getControllersPath()
     {
-        return $this->_basePath . '/controller';
+        return $this->basePath . '/controller';
     }
 
     /**
@@ -93,7 +93,7 @@ abstract class AbstractModule
      */
     public function getViewPath()
     {
-        return $this->_basePath . '/view';
+        return $this->basePath . '/view';
     }
 
     /**
@@ -103,7 +103,7 @@ abstract class AbstractModule
      */
     public function getPublicPath($relative = false)
     {
-        $basePath = str_replace('\\', '/', $this->_basePath);
+        $basePath = str_replace('\\', '/', $this->basePath);
 
         if ($relative) {
             $basePath = str_replace($this->getRequest()->getServer()->get('DOCUMENT_ROOT', ''), '', $basePath);
@@ -117,7 +117,7 @@ abstract class AbstractModule
      */
     public function getTitle()
     {
-        return $this->_title;
+        return $this->title;
     }
 
     /**
@@ -125,7 +125,7 @@ abstract class AbstractModule
      */
     public function getModulesManager()
     {
-        return $this->_modulesManager;
+        return $this->modulesManager;
     }
 
     /**
@@ -141,7 +141,7 @@ abstract class AbstractModule
      */
     public function getEventsManager()
     {
-        return $this->_eventsManager;
+        return $this->eventsManager;
     }
 
     /**
@@ -149,7 +149,7 @@ abstract class AbstractModule
      */
     public function getRequest()
     {
-        return $this->_request;
+        return $this->request;
     }
 
     /**

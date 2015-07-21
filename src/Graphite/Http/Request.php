@@ -5,29 +5,45 @@ use Graphite\Std;
 
 class Request
 {
-    /** @var string */
-    protected $_uri = '/';
+    /**
+     * @var string
+     */
+    protected $uri = '/';
 
-    /** @var Std\Properties */
-    protected $_query;
+    /**
+     * @var Std\Properties
+     */
+    protected $query;
 
-    /** @var Std\Properties */
-    protected $_post;
+    /**
+     * @var Std\Properties
+     */
+    protected $post;
 
-    /** @var Std\Properties */
-    protected $_cookie;
+    /**
+     * @var Std\Properties
+     */
+    protected $cookie;
 
-    /** @var Std\Properties */
-    protected $_files;
+    /**
+     * @var Std\Properties
+     */
+    protected $files;
 
-    /** @var Std\Properties */
-    protected $_headers;
+    /**
+     * @var Std\Properties
+     */
+    protected $headers;
 
-    /** @var Std\Properties */
-    protected $_server;
+    /**
+     * @var Std\Properties
+     */
+    protected $server;
 
-    /** @var Std\Properties */
-    protected $_params;
+    /**
+     * @var Std\Properties
+     */
+    protected $params;
 
     public function __construct()
     {
@@ -40,23 +56,23 @@ class Request
                 $server[$key] = $value;
             }
         }
-        $this->_headers = new Std\Properties($headers);
-        $this->_server = new Std\Properties($server);
+        $this->headers = new Std\Properties($headers);
+        $this->server = new Std\Properties($server);
 
         // Fetch post data
         $postData = $_POST;
-        if ($this->isPost() && strpos($this->_server->get('CONTENT_TYPE', ''), 'application/json') === 0) {
+        if ($this->isPost() && strpos($this->server->get('CONTENT_TYPE', ''), 'application/json') === 0) {
             $postData = json_decode(file_get_contents('php://input'), true);
         }
-        $this->_post = new Std\Properties($postData);
+        $this->post = new Std\Properties($postData);
 
-        $this->_query  = new Std\Properties($_GET);
-        $this->_cookie = new Std\Properties($_COOKIE);
-        $this->_files  = new Std\Properties($_FILES);
-        $this->_params = new Std\Properties();
+        $this->query  = new Std\Properties($_GET);
+        $this->cookie = new Std\Properties($_COOKIE);
+        $this->files  = new Std\Properties($_FILES);
+        $this->params = new Std\Properties();
 
-        $uri = parse_url($this->_server->get('REQUEST_URI', '/'));
-        $this->_uri = $uri['path'];
+        $uri = parse_url($this->server->get('REQUEST_URI', '/'));
+        $this->uri = $uri['path'];
     }
 
     /**
@@ -64,7 +80,7 @@ class Request
      */
     public function getUri()
     {
-        return $this->_uri;
+        return $this->uri;
     }
 
     /**
@@ -72,7 +88,7 @@ class Request
      */
     public function getQuery()
     {
-        return $this->_query;
+        return $this->query;
     }
 
     /**
@@ -80,7 +96,7 @@ class Request
      */
     public function getPost()
     {
-        return $this->_post;
+        return $this->post;
     }
 
     /**
@@ -88,7 +104,7 @@ class Request
      */
     public function getHeaders()
     {
-        return $this->_headers;
+        return $this->headers;
     }
 
     /**
@@ -96,7 +112,7 @@ class Request
      */
     public function getServer()
     {
-        return $this->_server;
+        return $this->server;
     }
 
     /**
@@ -104,7 +120,7 @@ class Request
      */
     public function getFiles()
     {
-        return $this->_files;
+        return $this->files;
     }
 
     /**
@@ -112,7 +128,7 @@ class Request
      */
     public function getCookie()
     {
-        return $this->_cookie;
+        return $this->cookie;
     }
 
     /**
@@ -120,7 +136,7 @@ class Request
      */
     public function getParams()
     {
-        return $this->_params;
+        return $this->params;
     }
 
     /**
@@ -128,7 +144,7 @@ class Request
      */
     public function getRequestMethod()
     {
-        return $this->_server->get('REQUEST_METHOD', 'GET');
+        return $this->server->get('REQUEST_METHOD', 'GET');
     }
 
     /**
@@ -160,6 +176,6 @@ class Request
      */
     public function isAjax()
     {
-        return $this->_headers->get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest';
+        return $this->headers->get('HTTP_X_REQUESTED_WITH') == 'XMLHttpRequest';
     }
 }

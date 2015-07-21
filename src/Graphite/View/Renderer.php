@@ -9,19 +9,19 @@ class Renderer
      * Base tpl path
      * @var string
      */
-    private $_basePath;
+    private $basePath;
 
     /**
      * Default templates extension
      * @var string
      */
-    private $_ext = '.phtml';
+    private $ext = '.phtml';
 
     /**
      * Shared params
      * @var array
      */
-    private $_params = array();
+    private $params = array();
 
     /**
      * @param string $basePath
@@ -36,15 +36,15 @@ class Renderer
      */
     public function setBasePath($basePath)
     {
-        $this->_basePath = rtrim($basePath, '\\/');
+        $this->basePath = rtrim($basePath, '\\/');
     }
 
     /**
-     * @return mixed
+     * @return string
      */
     public function getBasePath()
     {
-        return $this->_basePath;
+        return $this->basePath;
     }
 
     /**
@@ -61,7 +61,7 @@ class Renderer
             throw new Exception('Shared param name must be a string. "'.gettype($key).'" given!');
         }
 
-        $this->_params[$key] = $value;
+        $this->params[$key] = $value;
     }
 
     /**
@@ -86,7 +86,7 @@ class Renderer
      */
     public function get($key, $default = null)
     {
-        return array_key_exists($key, $this->_params) ? $this->_params[$key] : $default;
+        return array_key_exists($key, $this->params) ? $this->params[$key] : $default;
     }
 
     /**
@@ -95,7 +95,7 @@ class Renderer
      */
     public function getAll()
     {
-        return $this->_params;
+        return $this->params;
     }
 
     /**
@@ -105,11 +105,11 @@ class Renderer
     public function clear($key = null)
     {
         if (empty($key)) {
-            if (isset($this->_params[$key])) {
-                unset($this->_params[$key]);
+            if (isset($this->params[$key])) {
+                unset($this->params[$key]);
             }
         } else {
-            $this->_params = array();
+            $this->params = array();
         }
     }
 
@@ -122,11 +122,11 @@ class Renderer
      */
     public function render($template, $params = array())
     {
-        if (!empty($this->_basePath)) {
-            $template = $this->_basePath . DIRECTORY_SEPARATOR . $template;
+        if (!empty($this->basePath)) {
+            $template = $this->basePath . DIRECTORY_SEPARATOR . $template;
         }
 
-        $template .= $this->_ext;
+        $template .= $this->ext;
 
         if (!file_exists($template)) {
             throw new Exception(sprintf('Cant found template "%s"', $template));
@@ -141,7 +141,7 @@ class Renderer
             return ob_get_clean();
         };
 
-        return $closure($template, array_merge($this->_params, $params), $this);
+        return $closure($template, array_merge($this->params, $params), $this);
     }
 
     public function startBuffer()

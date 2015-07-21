@@ -10,8 +10,7 @@ namespace Graphite\Loader;
  * \\Modules\<module>\Controller\..   -> /modules/<module>/controller
  * \\<other>\...                      -> /vendor/<other>
  *
- *
- * @package Graphite\Loader
+ * @deprecated
  */
 class Autoloader
 {

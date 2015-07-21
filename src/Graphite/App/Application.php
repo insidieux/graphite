@@ -9,13 +9,19 @@ use Graphite\Std,
 
 class Application
 {
-    /** @var string  */
-    private $_basePath = '';
+    /**
+     * @var string
+     */
+    private $basePath = '';
 
-    /** @var bool  */
-    private $_started  = false;
+    /**
+     * @var bool
+     */
+    private $started  = false;
 
-    /** @var ServiceManager\ServiceManager */
+    /**
+     * @var ServiceManager\ServiceManager
+     */
     private $_sm;
 
     /**
@@ -23,7 +29,7 @@ class Application
      */
     public function __construct($basePath)
     {
-        $this->_basePath = $basePath;
+        $this->basePath = $basePath;
     }
 
     /**
@@ -39,7 +45,7 @@ class Application
      */
     public function getBasePath()
     {
-        return $this->_basePath;
+        return $this->basePath;
     }
 
     /**
@@ -50,12 +56,12 @@ class Application
      */
     public function run()
     {
-        if ($this->_started) {
+        if ($this->started) {
             throw new Std\Exception('Application already started!');
         }
 
         try {
-            $this->_started = true;
+            $this->started = true;
             $this->_init();
 
             /** @var $em Events\EventsManager */
@@ -134,7 +140,7 @@ class Application
      */
     private function _init()
     {
-        $base = $this->_basePath;
+        $base = $this->basePath;
 
         // first - init services locator
         $this->_sm = new ServiceManager\ServiceManager();

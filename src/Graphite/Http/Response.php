@@ -3,11 +3,26 @@ namespace Graphite\Http;
 
 class Response
 {
-    private $_statusCode = 200;
-    private $_body = '';
-    private $_headers = array();
+    /**
+     * @var int
+     */
+    private $code = 200;
 
-    protected $_posibleCodes = array(
+    /**
+     * @var string
+     */
+    private $body = '';
+
+    /**
+     * @var array
+     */
+    private $headers = [];
+
+    /**
+     * @var array
+     */
+    protected $possibleCodes = array(
+
         // informational codes
         100 => 'Continue',
         101 => 'Switching Protocols',
@@ -109,8 +124,8 @@ class Response
             throw new \Exception('Header name can`t start with HTTP! To set response status code use "setStatusCode" method.');
         }
 
-        if (!isset($this->_headers[$name]) || $rewrite) {
-            $this->_headers[$name] = $value;
+        if (!isset($this->headers[$name]) || $rewrite) {
+            $this->headers[$name] = $value;
         }
 
         return $this;
@@ -121,7 +136,7 @@ class Response
      */
     public function clearHeaders()
     {
-        $this->_headers = array();
+        $this->headers = array();
         return $this;
     }
 
@@ -138,7 +153,7 @@ class Response
      */
     public function sendHeaders()
     {
-        foreach ($this->_headers as $name => $value) {
+        foreach ($this->headers as $name => $value) {
             header($name . ': ' . $value);
         }
         return $this;
@@ -151,7 +166,7 @@ class Response
      */
     public function setBody($body)
     {
-        $this->_body = (string) $body;
+        $this->body = (string) $body;
         return $this;
     }
 
@@ -162,7 +177,7 @@ class Response
      */
     public function appendBody($content)
     {
-        $this->_body .= (string) $content;
+        $this->body .= (string) $content;
         return $this;
     }
 
@@ -171,7 +186,7 @@ class Response
      */
     public function clearBody()
     {
-        $this->_body = '';
+        $this->body = '';
         return $this;
     }
 
@@ -180,7 +195,7 @@ class Response
      */
     public function getStatusCode()
     {
-        return $this->_statusCode;
+        return $this->code;
     }
 
     /**
@@ -192,23 +207,23 @@ class Response
     public function setStatusCode($code)
     {
         $code = (int) $code;
-        if (!isset($this->_posibleCodes[$code])) {
+        if (!isset($this->possibleCodes[$code])) {
             throw new \Exception('Trying to set undefined status code "'.$code.'"');
         }
 
-        $this->_statusCode = $code;
+        $this->code = $code;
         return $this;
     }
 
     public function send()
     {
         if (!$this->isHeadersSent()) {
-            if ($this->_statusCode != 200) {
-                header("HTTP/1.1 {$this->_statusCode} {$this->_posibleCodes[$this->_statusCode]}");
+            if ($this->code != 200) {
+                header("HTTP/1.1 {$this->code} {$this->possibleCodes[$this->code]}");
             }
             $this->sendHeaders();
         }
 
-        echo $this->_body;
+        echo $this->body;
     }
 }

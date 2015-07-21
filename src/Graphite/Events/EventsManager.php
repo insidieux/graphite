@@ -9,12 +9,12 @@ class EventsManager
      * Признак того, что массив подписчиков бы отсортирован по приоритету
      * @var bool
      */
-    private $_sorted = false;
+    private $sorted = false;
 
     /**
      * @var array
      */
-    private $_listeners = array();
+    private $listeners = array();
 
     /**
      * @param string $eventName
@@ -24,9 +24,9 @@ class EventsManager
     public function getListeners($eventName = null)
     {
         if ($eventName === null) {
-            return $this->_listeners;
+            return $this->listeners;
         } else {
-            return isset($this->_listeners[$eventName]) ? $this->_listeners[$eventName] : array();
+            return isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : array();
         }
     }
 
@@ -49,8 +49,8 @@ class EventsManager
             throw new Std\Exception(sprintf('Callback must be a valid callable! "%s" given.', gettype($callback)));
         }
 
-        $this->_listeners[$eventName][$priority][] = $callback;
-        $this->_sorted = false;
+        $this->listeners[$eventName][$priority][] = $callback;
+        $this->sorted = false;
 
         return $this;
     }
@@ -68,20 +68,20 @@ class EventsManager
     {
         $e = new Event($name, $sender, $params);
 
-        if (!isset($this->_listeners[$name])) {
+        if (!isset($this->listeners[$name])) {
             return $e;
         }
 
         // sort events listeners by priority
-        if (!$this->_sorted) {
-            foreach ($this->_listeners as $eName => $events) {
-                krsort($this->_listeners[$eName]);
+        if (!$this->sorted) {
+            foreach ($this->listeners as $eName => $events) {
+                krsort($this->listeners[$eName]);
             }
-            $this->_sorted = true;
+            $this->sorted = true;
         }
 
         // run event listeners
-        foreach ($this->_listeners[$name] as $listeners) {
+        foreach ($this->listeners[$name] as $listeners) {
             foreach ($listeners as $listener) {
                 call_user_func($listener, $e);
                 if ($e->isPropagationStopped()) {

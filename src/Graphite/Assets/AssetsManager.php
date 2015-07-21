@@ -6,7 +6,7 @@ class AssetsManager
     /**
      * @var array
      */
-    private $_assets = array(
+    private $assets = array(
         'css' => array(),
         'js'  => array(),
     );
@@ -14,7 +14,7 @@ class AssetsManager
     /**
      * @var array
      */
-    private $_components = array();
+    private $components = array();
 
     /**
      * @param string $type
@@ -29,18 +29,18 @@ class AssetsManager
             $type = pathinfo($asset, PATHINFO_EXTENSION);
         }
 
-        if (empty($type) || !isset($this->_assets[$type])) {
+        if (empty($type) || !isset($this->assets[$type])) {
             return false;
         }
 
-        if (in_array($asset, $this->_assets[$type])) {
+        if (in_array($asset, $this->assets[$type])) {
             return false;
         }
 
         if ($append) {
-            array_push($this->_assets[$type], $asset);
+            array_push($this->assets[$type], $asset);
         } else {
-            array_unshift($this->_assets[$type], $asset);
+            array_unshift($this->assets[$type], $asset);
         }
 
         return true;
@@ -135,7 +135,7 @@ class AssetsManager
      */
     public function getJs()
     {
-        return $this->_assets['js'];
+        return $this->assets['js'];
     }
 
     /**
@@ -143,7 +143,7 @@ class AssetsManager
      */
     public function getCss()
     {
-        return $this->_assets['css'];
+        return $this->assets['css'];
     }
 
     /**
@@ -151,7 +151,7 @@ class AssetsManager
      */
     public function getAll()
     {
-        return $this->_assets;
+        return $this->assets;
     }
 
     /**
@@ -159,7 +159,7 @@ class AssetsManager
      */
     public function clearJs()
     {
-        $this->_assets['js'] = array();
+        $this->assets['js'] = array();
 
         return $this;
     }
@@ -169,7 +169,7 @@ class AssetsManager
      */
     public function clearCss()
     {
-        $this->_assets['css'] = array();
+        $this->assets['css'] = array();
 
         return $this;
     }
@@ -188,7 +188,7 @@ class AssetsManager
      */
     public function registerComponent($name, $assets)
     {
-        $this->_components[$name] = $assets;
+        $this->components[$name] = $assets;
     }
 
     /**
@@ -197,8 +197,8 @@ class AssetsManager
     public function appendComponent($name)
     {
         foreach ((array)$name as $cmp) {
-            if (isset($this->_components[$cmp])) {
-                $this->append($this->_components[$cmp]);
+            if (isset($this->components[$cmp])) {
+                $this->append($this->components[$cmp]);
             }
         }
     }

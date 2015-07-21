@@ -9,17 +9,17 @@ class ModulesManager
      * Путь до директории для поиска модулей
      * @var string
      */
-    private $_path = '';
+    private $path = '';
 
     /**
      * @var  ServiceManager
      */
-    private $_serviceManager;
+    private $serviceManager;
 
     /**
      * @var AbstractModule[]
      */
-    private $_modules;
+    private $modules;
 
     /**
      * @param ServiceManager $serviceManager
@@ -27,8 +27,8 @@ class ModulesManager
      */
     public function __construct(ServiceManager $serviceManager, $path)
     {
-        $this->_serviceManager = $serviceManager;
-        $this->_path = $path;
+        $this->serviceManager = $serviceManager;
+        $this->path = $path;
     }
 
     /**
@@ -36,7 +36,7 @@ class ModulesManager
      */
     public function getModulesPath()
     {
-        return $this->_path;
+        return $this->path;
     }
 
     /**
@@ -46,7 +46,7 @@ class ModulesManager
      */
     public function getModulePath($name)
     {
-        return $this->_path . '/' . ucfirst($name);
+        return $this->path . '/' . ucfirst($name);
     }
 
     /**
@@ -54,10 +54,10 @@ class ModulesManager
      */
     private function _loadModules()
     {
-        if (null === $this->_modules) {
-            $this->_modules = array();
+        if (null === $this->modules) {
+            $this->modules = array();
 
-            foreach (new \DirectoryIterator($this->_path) as $dir) { /** @var $dir \DirectoryIterator  */
+            foreach (new \DirectoryIterator($this->path) as $dir) { /** @var $dir \DirectoryIterator  */
 
                 if ($dir->isDot()) {
                     continue;
@@ -74,7 +74,7 @@ class ModulesManager
                 require_once $file;
 
                 if (class_exists($class) && is_subclass_of($class, 'Graphite\App\AbstractModule')) {
-                    $this->_modules[$name] = new $class($this->_serviceManager, $dir->getPathname());
+                    $this->modules[$name] = new $class($this->serviceManager, $dir->getPathname());
                 }
             }
         }
@@ -89,7 +89,7 @@ class ModulesManager
      */
     public function getModule($name)
     {
-        return $this->hasModule($name) ? $this->_modules[$name] : null;
+        return $this->hasModule($name) ? $this->modules[$name] : null;
     }
 
     /**
@@ -97,7 +97,7 @@ class ModulesManager
      */
     public function getModules()
     {
-        return $this->_loadModules()->_modules;
+        return $this->_loadModules()->modules;
     }
 
     /**
@@ -108,7 +108,7 @@ class ModulesManager
     public function hasModule($name)
     {
         $this->_loadModules();
-        return isset($this->_modules[$name]);
+        return isset($this->modules[$name]);
     }
 
     /**
@@ -117,7 +117,7 @@ class ModulesManager
     public function initModules()
     {
         $this->_loadModules();
-        foreach ($this->_modules as $module) {
+        foreach ($this->modules as $module) {
             $module->init();
         }
     }

@@ -8,22 +8,22 @@ class Event
     /**
      * @var string
      */
-    protected $_name;
+    protected $name;
 
     /**
      * @var mixed
      */
-    protected $_source;
+    protected $source;
 
     /**
      * @var \Graphite\Std\Properties
      */
-    protected $_params;
+    protected $params;
 
     /**
      * @var bool
      */
-    protected $_propagation = true;
+    protected $propagation = true;
 
     /**
      * @param string $name
@@ -42,7 +42,7 @@ class Event
      */
     public function getName()
     {
-        return $this->_name;
+        return $this->name;
     }
 
     /**
@@ -55,7 +55,7 @@ class Event
             throw new Std\Exception('Event name must be a non empty string');
         }
 
-        $this->_name = $name;
+        $this->name = $name;
     }
 
     /**
@@ -63,7 +63,7 @@ class Event
      */
     public function getParams()
     {
-        return $this->_params;
+        return $this->params;
     }
 
     /**
@@ -73,9 +73,9 @@ class Event
     public function setParams($params)
     {
         if ($params instanceof Std\Properties) {
-            $this->_params = $params;
+            $this->params = $params;
         } elseif (is_array($params)) {
-            $this->_params = new Std\Properties($params);
+            $this->params = new Std\Properties($params);
         } else {
             throw new Std\Exception(sprintf('Event $params must be an array or Std\Properties! "%s" given', gettype($params)));
         }
@@ -86,7 +86,7 @@ class Event
      */
     public function getSource()
     {
-        return $this->_source;
+        return $this->source;
     }
 
     /**
@@ -94,7 +94,7 @@ class Event
      */
     public function setSource($source)
     {
-        $this->_source = $source;
+        $this->source = $source;
     }
 
     /**
@@ -102,7 +102,7 @@ class Event
      */
     public function stopPropagation()
     {
-        $this->_propagation = false;
+        $this->propagation = false;
     }
 
     /**
@@ -110,6 +110,6 @@ class Event
      */
     public function isPropagationStopped()
     {
-        return $this->_propagation === false;
+        return $this->propagation === false;
     }
 }
