@@ -1,7 +1,18 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: jarool
- * Date: 21.07.2015
- * Time: 15:46
- */
+$libRoot = realpath('./../Libs/');
+
+// init very simple lib autoload
+spl_autoload_register(function ($className) use ($libRoot) {
+    $file = $libRoot . '/' . str_replace('\\', '/', $className) . '.php';
+    if (file_exists($file)) {
+        include $file;
+    }
+});
+
+// test classes autoload
+spl_autoload_register(function ($className) {
+    $file = dirname(__DIR__) . '/' . str_replace('\\', '/', $className) . '.php';
+    if (file_exists($file)) {
+        include $file;
+    }
+});
