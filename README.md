@@ -1,2 +1,2 @@
 # graphite
-Very simple php framework
+Very simple php components
