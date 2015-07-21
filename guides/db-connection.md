@@ -16,7 +16,9 @@ $connOptions = [
 $connection = new \Graphite\Db\Connection($connOptions);
 ```
 По умолчанию, соединение с mysql будет установлено при первом запросе. Проверить, установлено ли соединение с mysql можно методом `isConnected`
+
 Инициировать соединение вручную можно методом `Connection::connect()`
+
 Если есть необходимость получить созданный объект \PDO, можно воспользоваться методом `Connection::getPdoInstance()`
 
 ```php
