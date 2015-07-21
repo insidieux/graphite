@@ -61,11 +61,12 @@ $logger = $di->get('MyLogger');
 $logger->setPrefix('ContextPrefix');
 ```
 Также есть два shorthand метода:
-* \Graphite\Di\Container::setSingleton($name, $factory) - регистрирует сервис как синглтон
-* \Graphite\Di\Container::setFactory($name, $factory) - регистрирует сервис как фабрику
+* `\Graphite\Di\Container::setSingleton($name, $factory)` - регистрирует сервис как синглтон
+* `\Graphite\Di\Container::setFactory($name, $factory)` - регистрирует сервис как фабрику
+
 А так же 2 метода для мультисетов
-* \Graphite\Di\Container::mSetSingleton(array $config)
-* \Graphite\Di\Container::mSetFactory(array $config)
+* `\Graphite\Di\Container::mSetSingleton(array $config)`
+* `\Graphite\Di\Container::mSetFactory(array $config)`
 
 ```php
 $service = new \\Namespace\\Service;
