@@ -3,12 +3,6 @@ namespace Graphite\Db;
 
 use Graphite\Std\Exception;
 
-/**
- * Class Connection
- * @package Siteplan\Db
- *
- * @todo logger
- */
 class Connection
 {
     /**
@@ -401,15 +395,5 @@ class Connection
     public function delete()
     {
         return new Query\Delete($this);
-    }
-
-    /**
-     * Create & return new QueryBuilder instance
-     * @deprecated
-     * @return QueryBuilder
-     */
-    public function queryBuilder()
-    {
-        return new QueryBuilder($this);
     }
 }
