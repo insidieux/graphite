@@ -1,8 +1,6 @@
 <?php
 namespace Graphite\View;
 
-use Graphite\Std\Exception;
-
 class Renderer
 {
     /**
@@ -53,7 +51,7 @@ class Renderer
      * @param string $key
      * @param mixed  $value
      *
-     * @throws \Graphite\Std\Exception
+     * @throws Exception
      */
     public function set($key, $value)
     {
@@ -69,7 +67,7 @@ class Renderer
      *
      * @param array $values
      */
-    public function mset($values)
+    public function assign(array $values)
     {
         foreach ($values as $key => $val) {
             $this->set($key, $val);
@@ -80,7 +78,7 @@ class Renderer
      * Get one or all shared params
      *
      * @param string $key
-     * @param null $default
+     * @param null   $default
      *
      * @return mixed|null
      */
@@ -91,6 +89,7 @@ class Renderer
 
     /**
      * Returns all shared params
+     *
      * @return array
      */
     public function getAll()
@@ -99,7 +98,8 @@ class Renderer
     }
 
     /**
-     * Clear one or all shared params
+     * Clear all shared params or with $key name
+     *
      * @param string|null $key
      */
     public function clear($key = null)
@@ -115,9 +115,9 @@ class Renderer
 
     /**
      * @param string $template
-     * @param array $params
+     * @param array  $params
      *
-     * @throws \Exception
+     * @throws Exception
      * @return
      */
     public function render($template, $params = array())
@@ -129,32 +129,43 @@ class Renderer
         $template .= $this->ext;
 
         if (!file_exists($template)) {
-            throw new Exception(sprintf('Cant found template "%s"', $template));
+            throw new Exception(sprintf('Could not found template "%s"', $template));
         }
 
+        /**
+         * @param string   $__template
+         * @param array    $__params
+         * @param Renderer $view
+         *
+         * @return string
+         */
         $closure = function ($__template, $__params, $view) {
             extract($__params, EXTR_SKIP);
             unset($__params);
             
-            ob_start();
+            $view->startBuffer();
             include($__template);
-            return ob_get_clean();
+            return $view->stopBuffer();
         };
 
         return $closure($template, array_merge($this->params, $params), $this);
     }
 
+    /**
+     * Starts output buffering
+     */
     public function startBuffer()
     {
         ob_start();
     }
 
+    /**
+     * Get current buffer contents and delete current output buffer
+     *
+     * @return string
+     */
     public function stopBuffer()
     {
         return ob_get_clean();
     }
-
-    /* --- Helpers -------------------------------------------------------------------------------------------------- */
-
-    //@todo implement it ......
 }
