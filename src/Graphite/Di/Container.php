@@ -9,13 +9,13 @@ class Container
     /**
      * @var array
      */
-    protected $_services = [];
+    protected $services = [];
 
     /**
      * Register service factory. $factory can be:
-     * - object   - uses as service itself
-     * - string   - use as class name for create a service
-     * - \Closure - use as factory function; result uses as service
+     * * object   - used as a service by itself
+     * * string   - used as a class name to create a service
+     * * \Closure - used as a factory function; function must return an object
      *
      * @param string                 $name
      * @param \Closure|Object|string $factory
@@ -42,13 +42,13 @@ class Container
         }
 
         if (is_object($factory) && !($factory instanceof \Closure)) {
-            $this->_services[$name] = [
+            $this->services[$name] = [
                 'instance' => $factory,
                 'factory'  => null,
                 'type'     => self::TYPE_SINGLETON
             ];
         } else {
-            $this->_services[$name] = [
+            $this->services[$name] = [
                 'instance' => null,
                 'factory'  => $factory,
                 'type'     => $type
@@ -73,13 +73,14 @@ class Container
      * Mass register services as singleton
      *
      * @param array $config array (serviceName => factory)
+     *
      * @return Container
-     * @throws \Exception
+     * @throws Exception
      */
     public function mSetSingleton(array $config)
     {
         if (empty($config)){
-            throw new \Exception("Empty config array called");
+            throw new Exception("Empty config array called");
         }
         foreach ($config as $name => $factory){
             $this->setSingleton($name, $factory);
@@ -102,13 +103,14 @@ class Container
      * Mass register services as factory
      *
      * @param array $config array (serviceName => factory)
+     *
      * @return Container
-     * @throws \Exception
+     * @throws Exception
      */
     public function mSetFactory(array $config)
     {
         if (empty($config)){
-            throw new \Exception("Empty config array called");
+            throw new Exception("Empty config array called");
         }
         foreach ($config as $name => $factory){
             $this->setFactory($name, $factory);
@@ -120,25 +122,25 @@ class Container
      * @param string $name
      *
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function get($name)
     {
         if (!$this->has($name)) {
-            throw new \Exception('Service with name "'.$name.'" not registered');
+            throw new Exception('Service with name "'.$name.'" not registered');
         }
 
-        $instance = $this->_services[$name]['instance'];
+        $instance = $this->services[$name]['instance'];
 
         // resolve instance
         if ($instance === null) {
 
-            $factory = $this->_services[$name]['factory'];
+            $factory = $this->services[$name]['factory'];
 
             if (is_string($factory)) {
 
                 if (!class_exists($factory)) {
-                    throw new \Exception('Cant create service "'.$name.'". Class "'.$factory.'" not found');
+                    throw new Exception('Cant create service "'.$name.'". Class "'.$factory.'" not found');
                 }
 
                 $instance = new $factory;
@@ -154,11 +156,11 @@ class Container
 
             // check instance
             if (!is_object($instance)) {
-                throw new \Exception('Create "'.$name.'" fails! Factory result must be an object, "'.gettype($instance).'"');
+                throw new Exception('Create "'.$name.'" fails! Factory result must be an object, "'.gettype($instance).'"');
             }
 
-            if ($this->_services[$name]['type'] == self::TYPE_SINGLETON) {
-                $this->_services[$name]['instance'] = $instance;
+            if ($this->services[$name]['type'] == self::TYPE_SINGLETON) {
+                $this->services[$name]['instance'] = $instance;
             }
         }
 
@@ -172,7 +174,7 @@ class Container
      */
     public function has($name)
     {
-        return isset($this->_services[$name]);
+        return isset($this->services[$name]);
     }
 
     /**
@@ -180,20 +182,21 @@ class Container
      */
     public function getRegisteredServices()
     {
-        return array_keys($this->_services);
+        return array_keys($this->services);
     }
 
     /**
      * @param $name
+     *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function getServiceInfo($name)
     {
         if (!$this->has($name)) {
-            throw new \Exception('Service with name "'.$name.'" not registered');
+            throw new Exception('Service with name "'.$name.'" not registered');
         }
 
-        return $this->_services[$name];
+        return $this->services[$name];
     }
 }
