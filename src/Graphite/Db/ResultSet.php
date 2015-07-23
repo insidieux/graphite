@@ -6,14 +6,22 @@ class ResultSet
     /**
      * @var  \PDOStatement
      */
-    private $_stmt;
+    private $stmt;
 
     /**
      * @param \PDOStatement $stmt Prepared & executed PDO statement
      */
     public function __construct(\PDOStatement $stmt)
     {
-        $this->_stmt = $stmt;
+        $this->stmt = $stmt;
+    }
+
+    /**
+     * @return \PDOStatement
+     */
+    public function getRawStmt()
+    {
+        return $this->stmt;
     }
 
     /**
@@ -23,41 +31,43 @@ class ResultSet
      */
     public function fetchAll()
     {
-        return $this->_stmt->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     /**
-     * Вернет все строки в виде ассоциативного массива, проиндексированного по значению указанной колонки
-     *
-     * @param string $indexBy Имя колонки для индексации. Если не указан - результат проиндексируется по первой колонке
-     *
-     * @return array
+     * Returns all result rows as assoc arrays indexed by $indexBy column
      *
      * Example table columns:
+     *
+     * ```
      * id,  age, sex
      * --------------
      * 10   16   1
      * 20   18   2
      * 30   21   1
      *
-     * ```
      * fetchAllIndexed() -> [
      *   10 => [10, 16, 1],
      *   20 => [20, 18, 2],
      *   30 => [30, 21, 1]
      * ];
+     *
      * fetchAllIndexed('age') -> [
      *   16 => [10, 16, 1],
      *   18 => [20, 18, 2],
      *   21 => [30, 21, 1]
      * ];
      * ```
+     *
+     * @param string $indexBy Column name to index by. By default indexing by first column
+     *
+     * @return array
      */
     public function fetchAllIndexed($indexBy = null)
     {
         $res = array();
 
-        while (($row = $this->_stmt->fetch()) !== false) {
+        while (($row = $this->stmt->fetch()) !== false) {
             if ($indexBy === null) {
                 $indexBy = key($row);
             }
@@ -70,13 +80,8 @@ class ResultSet
     /**
      * Вернет все строки в виде ассоциативного массива, сгруппированные по указанной колонке.
      *
-     * @param string $groupBy Имя колонки для группировки
-     * @param string $indexBy Имя колонки для индексации внутри группы. Если не передано - проиндексируется в порядке
-     *                        добавления
-     *
-     * @return array
-     *
      * Example table columns:
+     * ```
      * id,  age, sex
      * --------------
      * 10   16   1
@@ -87,16 +92,24 @@ class ResultSet
      *   1 => [0 => [10, 16, 1], 1 => [30, 21, 1]]
      *   2 => [0 => [20, 18, 2]]
      * ]
+     *
      * fetchAllGrouped('sex', 'id') -> [
      *   1 => [10 => [10, 16, 1], 30 => [30, 21, 1]]
      *   2 => [20 => [20, 18, 2]]
      * ]
+     * ```
+     *
+     * @param string $groupBy Имя колонки для группировки
+     * @param string $indexBy Имя колонки для индексации внутри группы. Если не передано - проиндексируется в порядке
+     *                        добавления
+     *
+     * @return array
      */
     public function fetchAllGrouped($groupBy, $indexBy = null)
     {
         $res = array();
 
-        while (($row = $this->_stmt->fetch()) !== false) {
+        while (($row = $this->stmt->fetch()) !== false) {
             if ($indexBy === null) {
                 $res[$row[$groupBy]][] = $row;
             } else {
@@ -114,7 +127,7 @@ class ResultSet
      */
     public function fetchRow()
     {
-        $result = $this->_stmt->fetch(\PDO::FETCH_ASSOC);
+        $result = $this->stmt->fetch(\PDO::FETCH_ASSOC);
         return $result === false ? [] : (array) $result;
     }
 
@@ -125,7 +138,7 @@ class ResultSet
      */
     public function fetchColumn()
     {
-        return $this->_stmt->fetchAll(\PDO::FETCH_COLUMN);
+        return $this->stmt->fetchAll(\PDO::FETCH_COLUMN);
     }
 
     /**
@@ -135,7 +148,7 @@ class ResultSet
      */
     public function fetchPairs()
     {
-        return $this->_stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
+        return $this->stmt->fetchAll(\PDO::FETCH_KEY_PAIR);
     }
 
     /**
@@ -145,7 +158,7 @@ class ResultSet
      */
     public function fetchOne()
     {
-        return $this->_stmt->fetchColumn(0);
+        return $this->stmt->fetchColumn(0);
     }
 
     /**
@@ -161,7 +174,7 @@ class ResultSet
         if ($className === null) {
             $className = '\StdClass';
         }
-        return $this->_stmt->fetchAll(\PDO::FETCH_CLASS, $className);
+        return $this->stmt->fetchAll(\PDO::FETCH_CLASS, $className);
     }
 
     /**
@@ -171,6 +184,6 @@ class ResultSet
      */
     public function getRowCount()
     {
-        return $this->_stmt->rowCount();
+        return $this->stmt->rowCount();
     }
 }

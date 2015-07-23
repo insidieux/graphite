@@ -47,6 +47,7 @@ class Event
 
     /**
      * @param string $name
+     *
      * @throws \Graphite\Std\Exception
      */
     public function setName($name)
@@ -68,6 +69,7 @@ class Event
 
     /**
      * @param \Graphite\Std\Properties|array $params
+     *
      * @throws \Graphite\Std\Exception
      */
     public function setParams($params)

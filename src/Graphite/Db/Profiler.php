@@ -12,54 +12,57 @@ class Profiler
     /**
      * @var array
      */
-    protected $_log = array();
+    protected $log = array();
 
     /**
      * @var array|null
      */
-    protected $_query;
+    protected $query;
 
     /**
      * @var string
      */
-    protected $_staticCaller;
+    protected $staticCaller;
 
     /**
      * @var string
      */
-    protected $_basePath;
+    protected $basePath;
 
     /**
      * @var callable
      */
-    protected $_callback;
+    protected $callback;
 
     /**
      * Установить вызывающий класс, если вызов идет из статического метода
+     *
      * @param string $class
      */
     public function setStaticCaller($class)
     {
-        $this->_staticCaller = $class;
+        $this->staticCaller = $class;
     }
 
     /**
      * Базовый путь, который будет выризаться при определении пути к файлам
+     *
      * @param string $path
      */
     public function setBasePath($path)
     {
-        $this->_basePath = $path;
+        $this->basePath = $path;
     }
 
     /**
      * Установить функцию (php callable) которая будет вызыватсья при start и stop
+     *
      * @param callable $callback
      */
     public function setCallback($callback)
     {
         if (is_callable($callback)) {
-            $this->_callback = $callback;
+            $this->callback = $callback;
         }
     }
 
@@ -85,11 +88,11 @@ class Profiler
                         break;
                     }
                     case 'Graphite\Db\ActiveRecord': {
-                        $initiator = $this->_formatClass($this->_staticCaller, $trace['type'], $trace['function']);
+                        $initiator = $this->_formatClass($this->staticCaller, $trace['type'], $trace['function']);
                         break;
                     }
                     case 'Graphite\Db\ActiveRecord\Finder': {
-                        $initiator = $this->_formatClass($this->_staticCaller, $trace['type'], 'find');
+                        $initiator = $this->_formatClass($this->staticCaller, $trace['type'], 'find');
                         break;
                     }
                     default: {
@@ -98,14 +101,14 @@ class Profiler
                 }
 
                 $context['initiator'] = $initiator;
-                $context['file'] = empty($this->_basePath) ? $trace['file'] : str_replace($this->_basePath, '', $trace['file']);
+                $context['file'] = empty($this->basePath) ? $trace['file'] : str_replace($this->basePath, '', $trace['file']);
                 $context['line'] = $trace['line'];
 
                 break;
             }
         }
 
-        $this->_query = array(
+        $this->query = array(
             'sql'     => $sql,
             'start'   => microtime(true),
             'type'    => $this->parseType($sql),
@@ -113,8 +116,8 @@ class Profiler
             'context' => $context,
         );
 
-        if ($this->_callback) {
-            call_user_func($this->_callback, 'start', $this->_query);
+        if ($this->callback) {
+            call_user_func($this->callback, 'start', $this->query);
         }
     }
 
@@ -125,17 +128,17 @@ class Profiler
      */
     public function stop($numRows = 0)
     {
-        $query = $this->_query;
+        $query = $this->query;
         $query['stop'] = microtime(true);
         $query['time'] = $query['stop'] - $query['start'];
         $query['rows'] = (int) $numRows;
 
-        $this->_log[] = $query;
+        $this->log[] = $query;
 
-        $this->_query = null;
+        $this->query = null;
 
-        if ($this->_callback) {
-            call_user_func($this->_callback, 'stop', $query);
+        if ($this->callback) {
+            call_user_func($this->callback, 'stop', $query);
         }
 
         return $query;
@@ -146,7 +149,7 @@ class Profiler
      */
     public function getAll()
     {
-        return $this->_log;
+        return $this->log;
     }
 
     /**
@@ -154,7 +157,7 @@ class Profiler
      */
     public function getLast()
     {
-        return end($this->_log);
+        return end($this->log);
     }
 
     /**

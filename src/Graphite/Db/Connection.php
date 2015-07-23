@@ -1,16 +1,17 @@
 <?php
 namespace Graphite\Db;
 
-use Graphite\Std\Exception;
-
 class Connection
 {
     /**
      * @var \PDO|null
      */
-    private $_pdo = null;
+    private $pdo = null;
 
-    private $_connOpts = array(
+    /**
+     * @var array
+     */
+    private $connOpts = array(
         'db_host'   => '',
         'db_port'   => '',
         'db_name'   => '',
@@ -23,7 +24,7 @@ class Connection
     /**
      * @var Profiler
      */
-    private $_profiler;
+    private $profiler;
 
     /**
      * @param array $options
@@ -41,22 +42,22 @@ class Connection
         }
 
         // set options
-        foreach ($this->_connOpts as $name => $value) {
+        foreach ($this->connOpts as $name => $value) {
             if (array_key_exists($name, $options)) {
-                $this->_connOpts[$name] = $options[$name];
+                $this->connOpts[$name] = $options[$name];
             }
         }
 
         // check required options
-        if (empty($this->_connOpts['db_host'])) {
+        if (empty($this->connOpts['db_host'])) {
             throw new Exception('DB ERROR: connection option "db_host" can`t be empty!');
         }
 
-        if (empty($this->_connOpts['db_name'])) {
+        if (empty($this->connOpts['db_name'])) {
             throw new Exception('DB ERROR: connection option "db_name" can`t be empty');
         }
 
-        if (empty($this->_connOpts['username'])) {
+        if (empty($this->connOpts['username'])) {
             throw new Exception('DB ERROR: connection option "username" can`t be empty');
         }
     }
@@ -66,36 +67,42 @@ class Connection
      */
     public function isConnected()
     {
-        return $this->_pdo instanceof \PDO;
+        return $this->pdo instanceof \PDO;
     }
 
+    /**
+     * Try to connect to database
+     *
+     * @return \PDO
+     * @throws Exception
+     */
     public function connect()
     {
         if (!$this->isConnected()) {
 
-            $dsn = 'mysql:host=' . $this->_connOpts['db_host'] . ';dbname=' . $this->_connOpts['db_name'];
+            $dsn = 'mysql:host=' . $this->connOpts['db_host'] . ';dbname=' . $this->connOpts['db_name'];
             $options = array(
-                \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES "' . $this->_connOpts['charset'] . '";'
+                \PDO::MYSQL_ATTR_INIT_COMMAND => 'SET NAMES "' . $this->connOpts['charset'] . '";'
             );
 
-            // TODO 1. валидация 2. setAttributes
-            if (!empty($this->_connOpts['attr'])){
-                $options = $options + $this->_connOpts['attr'];
+            // @todo 1. валидация 2. setAttributes
+            if (!empty($this->connOpts['attr'])){
+                $options = $options + $this->connOpts['attr'];
             }
 
             $profilerEnabled = $this->isProfilerEnabled();
 
             try {
                 if ($profilerEnabled) {
-                    $this->_profiler->start('CONNECT');
+                    $this->profiler->start('CONNECT');
                 }
 
-                $this->_pdo = new \PDO($dsn, $this->_connOpts['username'], $this->_connOpts['password'], $options);
-                $this->_pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-                $this->_pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+                $this->pdo = new \PDO($dsn, $this->connOpts['username'], $this->connOpts['password'], $options);
+                $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                $this->pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
 
                 if ($profilerEnabled) {
-                    $this->_profiler->stop();
+                    $this->profiler->stop();
                 }
 
             } catch (\PDOException $e) {
@@ -103,22 +110,31 @@ class Connection
             }
         }
 
-        return $this->_pdo;
+        return $this->pdo;
     }
 
+    /**
+     * @param Profiler $profiler
+     */
     public function setProfiler(Profiler $profiler)
     {
-        $this->_profiler = $profiler;
+        $this->profiler = $profiler;
     }
 
+    /**
+     * @return Profiler
+     */
     public function getProfiler()
     {
-        return $this->_profiler;
+        return $this->profiler;
     }
 
+    /**
+     * @return bool
+     */
     public function isProfilerEnabled()
     {
-        return ($this->_profiler instanceof Profiler);
+        return ($this->profiler instanceof Profiler);
     }
 
     /**
@@ -126,7 +142,7 @@ class Connection
      */
     public function getPdoInstance()
     {
-        return $this->_pdo;
+        return $this->pdo;
     }
 
     /**
@@ -208,7 +224,7 @@ class Connection
     }
 
     /**
-     * @param array[string] $names
+     * @param string[] $names
      *
      * @return array
      */
@@ -261,8 +277,10 @@ class Connection
     }
 
     /**
-     * @param string $string
-     * @param int|array $value
+     * Replace "?" in a string by quoted values
+     *
+     * @param string           $string
+     * @param string|int|array $value
      *
      * @return string
      */
@@ -302,8 +320,9 @@ class Connection
 
     /**
      * @param string $sql
-     * @param array $binds
+     * @param array  $binds
      * @param string $method
+     *
      * @throws Exception
      * @return int|ResultSet
      */
@@ -319,14 +338,14 @@ class Connection
             $profilerEnabled = $this->isProfilerEnabled();
 
             if ($profilerEnabled) {
-                $this->_profiler->start($sql);
+                $this->profiler->start($sql);
             }
 
-            $result = $this->_pdo->$method($sql);
+            $result = $this->pdo->$method($sql);
 
             if ($profilerEnabled) {
                 $rows = ($result instanceof \PDOStatement) ? $result->rowCount() : 0;
-                $this->_profiler->stop($rows);
+                $this->profiler->stop($rows);
             }
 
             return ($method == 'query') ? new ResultSet($result) : $result;
@@ -338,7 +357,8 @@ class Connection
 
     /**
      * @param string $sql
-     * @param array $binds
+     * @param array  $binds
+     *
      * @return ResultSet
      */
     public function query($sql, $binds = array())
@@ -348,7 +368,8 @@ class Connection
 
     /**
      * @param string $sql
-     * @param array $binds
+     * @param array  $binds
+     *
      * @return int
      */
     public function execute($sql, $binds = array())
@@ -358,6 +379,7 @@ class Connection
 
     /**
      * Returns the ID of the last inserted row
+     *
      * @return int
      */
     public function getLastInsertId()
@@ -395,5 +417,17 @@ class Connection
     public function delete()
     {
         return new Query\Delete($this);
+    }
+
+    /**
+     * Wraps string by Expr object
+     *
+     * @param string $string
+     *
+     * @return Expr
+     */
+    public function expr($string)
+    {
+        return new Expr($string);
     }
 }
