@@ -79,10 +79,12 @@ class Finder extends Select
             return $result;
         }
 
-        // create models
         $models = [];
         $modelClass = $this->modelClass;
-        foreach ($result->fetchAll() as $row) {
+
+        // create models
+        $stmt = $result->getRawStmt();
+        while ($row = $stmt->fetch(\PDO::FETCH_ASSOC)) {
             /** @var Model $model */
             $model = new $modelClass($row, true);
             $model->afterFind();

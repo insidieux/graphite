@@ -1,5 +1,5 @@
 <?php
-namespace tests\Graphite\Db;
+namespace tests\Db;
 
 class SelectTest extends DatabaseTestCase
 {

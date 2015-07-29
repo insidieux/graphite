@@ -118,13 +118,11 @@ class Model implements \JsonSerializable
         $this->init();
 
         if (!empty($attrs)) {
-            $this->assign($attrs);
+            // attrs setting in first time, so we can directly set it into internal attrs
+            $this->attrs = $attrs + $this->attrs;
         }
 
-        if ($fetched) {
-            $this->setFetched($fetched);
-            $this->makeClean();
-        }
+        $this->setFetched($fetched);
     }
 
     /**
