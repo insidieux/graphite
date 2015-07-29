@@ -1,5 +1,5 @@
 <?php
-namespace tests\Graphite\Db;
+namespace tests\Db;
 
 class TestModel extends \Graphite\Db\ActiveRecord\Model
 {}

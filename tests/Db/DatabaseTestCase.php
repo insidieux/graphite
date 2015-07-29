@@ -1,5 +1,5 @@
 <?php
-namespace tests\Graphite\Db;
+namespace tests\Db;
 
 use Graphite\Db\Connection;
 
