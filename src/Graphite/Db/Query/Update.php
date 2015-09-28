@@ -20,6 +20,10 @@ class Update extends AbstractQuery
             $sql[] = 'WHERE ' . $where;
         }
 
+        IF (($order = $this->makeOrderBy()) != '') {
+            $sql[] = "ORDER BY $order";
+        }
+
         if (!empty($this->limit)) {
             $sql[] = 'LIMIT ' . $this->limit;
         }
