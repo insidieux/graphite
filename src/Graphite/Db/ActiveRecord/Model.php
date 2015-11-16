@@ -581,8 +581,12 @@ class Model implements \JsonSerializable
      */
     public static function insertGlobal()
     {
-        return (new Insert(static::getConnection()))
-            ->into(static::getTable());
+        $conn = static::getConnection();
+        if ($conn->isProfilerEnabled()) {
+            $conn->getProfiler()->setStaticCaller(static::class);
+        }
+
+        return (new Insert($conn))->into(static::getTable());
     }
 
     /**
@@ -592,8 +596,12 @@ class Model implements \JsonSerializable
      */
     public static function updateGlobal()
     {
-        return (new Update(static::getConnection()))
-            ->table(static::getTable());
+        $conn = static::getConnection();
+        if ($conn->isProfilerEnabled()) {
+            $conn->getProfiler()->setStaticCaller(static::class);
+        }
+
+        return (new Update($conn))->table(static::getTable());
     }
 
     /**
@@ -603,7 +611,11 @@ class Model implements \JsonSerializable
      */
     public static function deleteGlobal()
     {
-        return (new Delete(static::getConnection()))
-            ->from(static::getTable());
+        $conn = static::getConnection();
+        if ($conn->isProfilerEnabled()) {
+            $conn->getProfiler()->setStaticCaller(static::class);
+        }
+
+        return (new Delete($conn))->from(static::getTable());
     }
 }
