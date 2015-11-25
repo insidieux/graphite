@@ -81,13 +81,12 @@ class Profiler
 
                 switch ($trace['class']) {
                     case 'Graphite\Db\Connection':
-                    case 'Graphite\Db\QueryBuilder':
                     case 'Graphite\Db\Query\AbstractQuery': {
                         $next = $backtrace[$i+1];
                         $initiator = $this->_formatClass($next['class'], $next['type'], $next['function']);
                         break;
                     }
-                    case 'Graphite\Db\ActiveRecord': {
+                    case 'Graphite\Db\ActiveRecord\Model': {
                         $initiator = $this->_formatClass($this->staticCaller, $trace['type'], $trace['function']);
                         break;
                     }
