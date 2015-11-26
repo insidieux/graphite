@@ -1,8 +1,11 @@
 <?php
 namespace tests\Db;
 
-class TestModel extends \Graphite\Db\ActiveRecord\Model
-{}
+use Graphite\Db\ActiveRecord\Finder;
+use Graphite\Db\Query\Delete;
+use Graphite\Db\Query\Insert;
+use Graphite\Db\Query\Update;
+use tests\Fixtures\TestModel;
 
 class ActiveRecordTest extends DatabaseTestCase
 {
@@ -15,7 +18,7 @@ class ActiveRecordTest extends DatabaseTestCase
     {
         $this->assertEquals('testmodel', TestModel::getTable());
         $this->assertEquals('id', TestModel::getPK());
-        $this->assertEquals(\Graphite\Db\ActiveRecord\Finder::class, TestModel::getFinderClass());
+        $this->assertEquals(Finder::class, TestModel::getFinderClass());
     }
 
     public function testAttributes()
@@ -64,6 +67,24 @@ class ActiveRecordTest extends DatabaseTestCase
         $this->assertFalse($model->isDirty());
     }
 
+    public function testNonDirtyOnEqualsSet()
+    {
+        $model = new TestModel([
+            'a' => 1,
+            'b' => 'foo',
+        ]);
+
+        $model->makeClean();
+
+        $model->a = 1;
+        $model->b = 'foo';
+        $model->c = null;
+
+        $this->assertFalse($model->isDirty('a'));
+        $this->assertFalse($model->isDirty('b'));
+        $this->assertFalse($model->isDirty('c'));
+    }
+
     public function testExports()
     {
         $attributes = ['name' => 'name', 'age' => 10];
@@ -78,19 +99,19 @@ class ActiveRecordTest extends DatabaseTestCase
     public function testGlobalQueries()
     {
         $query = TestModel::find();
-        $this->assertInstanceOf(\Graphite\Db\ActiveRecord\Finder::class, $query);
+        $this->assertInstanceOf(Finder::class, $query);
         $this->assertEquals("SELECT * FROM `testmodel`", $query->toString());
 
         $query = TestModel::insertGlobal();
-        $this->assertInstanceOf(\Graphite\Db\Query\Insert::class, $query);
+        $this->assertInstanceOf(Insert::class, $query);
         $this->assertEquals("INSERT INTO `testmodel`", $query->toString());
 
         $query = TestModel::updateGlobal();
-        $this->assertInstanceOf(\Graphite\Db\Query\Update::class, $query);
+        $this->assertInstanceOf(Update::class, $query);
         $this->assertEquals("UPDATE `testmodel`", $query->toString());
 
         $query = TestModel::deleteGlobal();
-        $this->assertInstanceOf(\Graphite\Db\Query\Delete::class, $query);
+        $this->assertInstanceOf(Delete::class, $query);
         $this->assertEquals("DELETE FROM `testmodel`", $query->toString());
     }
 }
