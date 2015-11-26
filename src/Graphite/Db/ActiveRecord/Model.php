@@ -141,6 +141,11 @@ class Model implements \JsonSerializable
      */
     public function __set($name, $value)
     {
+        // do not update if new value is equal to current
+        if ($this->$name === $value) {
+            return;
+        }
+
         // copy current to old values
         if (!array_key_exists($name, $this->oldAttrs)) {
             $this->oldAttrs[$name] = $this->$name;
