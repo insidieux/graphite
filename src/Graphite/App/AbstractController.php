@@ -1,9 +1,9 @@
 <?php
 namespace Graphite\App;
 
-use Graphite\Http,
-    Graphite\View,
-    Graphite\ServiceManager\ServiceManager;
+use Graphite\Di\Container;
+use Graphite\Http;
+use Graphite\View;
 
 abstract class AbstractController
 {
@@ -14,9 +14,9 @@ abstract class AbstractController
     private $module;
 
     /**
-     * @var ServiceManager
+     * @var Container
      */
-    private $_serviceManager;
+    private $di;
 
     /**
      * @var Http\Request
@@ -25,13 +25,13 @@ abstract class AbstractController
 
     /**
      * @param AbstractModule $module
-     * @param ServiceManager $serviceManager
+     * @param Container $di
      */
-    public function __construct(AbstractModule $module, ServiceManager $serviceManager)
+    public function __construct(AbstractModule $module, Container $di)
     {
-        $this->module         = $module;
-        $this->_serviceManager = $serviceManager;
-        $this->request        = $this->_serviceManager->get('Request');
+        $this->module  = $module;
+        $this->di      = $di;
+        $this->request = $this->di->get('Request');
     }
 
     /**
@@ -43,11 +43,11 @@ abstract class AbstractController
     }
 
     /**
-     * @return ServiceManager
+     * @return Container
      */
-    public function getServiceManager()
+    public function getDi()
     {
-        return $this->_serviceManager;
+        return $this->di;
     }
 
     /**

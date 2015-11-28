@@ -3,7 +3,7 @@ namespace Graphite\App;
 
 use Graphite\Events;
 use Graphite\Http;
-use Graphite\ServiceManager\ServiceManager;
+use Graphite\Di\Container;
 
 abstract class AbstractModule
 {
@@ -20,9 +20,9 @@ abstract class AbstractModule
     protected $basePath  = '';
 
     /**
-     * @var ServiceManager
+     * @var Container
      */
-    private $_serviceManager;
+    private $di;
 
     /**
      * @var ModulesManager
@@ -40,15 +40,17 @@ abstract class AbstractModule
     private $request;
 
     /**
-     * @param ServiceManager $serviceManager
-     * @param string         $path
+     * @param Container $di
+     * @param string    $path
+     *
+     * @throws \Graphite\Di\Exception
      */
-    public function __construct(ServiceManager $serviceManager, $path = '')
+    public function __construct(Container $di, $path = '')
     {
-        $this->_serviceManager = $serviceManager;
-        $this->modulesManager = $serviceManager->get('ModulesManager');
-        $this->eventsManager  = $serviceManager->get('EventsManager');
-        $this->request        = $serviceManager->get('Request');
+        $this->di = $di;
+        $this->modulesManager = $di->get('ModulesManager');
+        $this->eventsManager  = $di->get('EventsManager');
+        $this->request        = $di->get('Request');
 
         $this->setBasePath($path);
     }
@@ -129,11 +131,11 @@ abstract class AbstractModule
     }
 
     /**
-     * @return ServiceManager
+     * @return Container
      */
-    public function getServiceManager()
+    public function getDi()
     {
-        return $this->_serviceManager;
+        return $this->di;
     }
 
     /**
