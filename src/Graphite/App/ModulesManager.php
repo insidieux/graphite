@@ -1,7 +1,7 @@
 <?php
 namespace Graphite\App;
 
-use Graphite\ServiceManager\ServiceManager;
+use Graphite\Di\Container;
 
 class ModulesManager
 {
@@ -12,9 +12,9 @@ class ModulesManager
     private $path = '';
 
     /**
-     * @var  ServiceManager
+     * @var  Container
      */
-    private $serviceManager;
+    private $di;
 
     /**
      * @var AbstractModule[]
@@ -22,12 +22,12 @@ class ModulesManager
     private $modules;
 
     /**
-     * @param ServiceManager $serviceManager
-     * @param string         $path
+     * @param Container $di
+     * @param string $path
      */
-    public function __construct(ServiceManager $serviceManager, $path)
+    public function __construct(Container $di, $path)
     {
-        $this->serviceManager = $serviceManager;
+        $this->di = $di;
         $this->path = $path;
     }
 
@@ -74,7 +74,7 @@ class ModulesManager
                 require_once $file;
 
                 if (class_exists($class) && is_subclass_of($class, 'Graphite\App\AbstractModule')) {
-                    $this->modules[$name] = new $class($this->serviceManager, $dir->getPathname());
+                    $this->modules[$name] = new $class($this->di, $dir->getPathname());
                 }
             }
         }

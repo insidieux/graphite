@@ -1,11 +1,10 @@
 <?php
 namespace Graphite\App;
 
-use Graphite\Std,
-    Graphite\ServiceManager,
-    Graphite\Loader,
-    Graphite\Events,
-    Graphite\Http;
+use Graphite\Di;
+use Graphite\Loader;
+use Graphite\Events;
+use Graphite\Http;
 
 class Application
 {
@@ -20,9 +19,9 @@ class Application
     private $started  = false;
 
     /**
-     * @var ServiceManager\ServiceManager
+     * @var Di\Container
      */
-    private $_sm;
+    private $di;
 
     /**
      * @param string $basePath
@@ -33,11 +32,19 @@ class Application
     }
 
     /**
-     * @return ServiceManager\ServiceManager
+     * @return Di\Container
      */
-    public function getServiceManager()
+    public function getDi()
     {
-        return $this->_sm;
+        return $this->di;
+    }
+
+    /**
+     * @param Di\Container $di
+     */
+    public function setDi(Di\Container $di)
+    {
+        $this->di = $di;
     }
 
     /**
@@ -51,35 +58,36 @@ class Application
     /**
      * Запуск приложения в работу.
      *
-     * @throws Std\Exception
      * @return string Ответ клиенту
+     *
+     * @throws Exception
      */
     public function run()
     {
         if ($this->started) {
-            throw new Std\Exception('Application already started!');
+            throw new Exception('Application already started!');
         }
 
         try {
             $this->started = true;
-            $this->_init();
+            $this->init();
 
-            /** @var $em Events\EventsManager */
-            $em = $this->getServiceManager()->get('EventsManager');
+            /** @var Events\EventsManager $em  */
+            $em = $this->getDi()->get('EventsManager');
             $em->trigger('app:init', $this);
 
-            $this->_route();
+            $this->route();
             $em->trigger('app:route', $this);
 
             // resolve controller
             try {
 
-                $ctrl = $this->_resolveController();
+                $ctrl = $this->resolveController();
 
-            } catch (Std\Exception $e) {
+            } catch (Exception $e) {
 
-                /** @var Std\Properties $params */
-                $params = $this->_sm->get('Request')->getParams();
+                /** @var \Graphite\Std\Properties $params */
+                $params = $this->di->get('Request')->getParams();
 
                 if (!$params->get('isAdmin')) {
                     throw $e;
@@ -91,7 +99,7 @@ class Application
                     'action'     => 'notfound',
                 ));
 
-                $ctrl = $this->_resolveController();
+                $ctrl = $this->resolveController();
             }
 
             // run controller action
@@ -105,11 +113,11 @@ class Application
             // resolving response
             if (!($response instanceof Http\Response)) {
                 $em->trigger('app:resolveResponse', $this, array('response' => $response));
-                $response = $this->getServiceManager()->get('Response');
+                $response = $this->getDi()->get('Response');
             }
 
             if (!($response instanceof Http\Response)) {
-                throw new Std\Exception('Controller must return Http\Response, or a string! "'.gettype($response).'" returned');
+                throw new Exception('Controller must return Http\Response, or a string! "'.gettype($response).'" returned');
             }
 
             // sending result
@@ -124,8 +132,8 @@ class Application
             }
 
             $message  = '<pre>';
-            $message .= '<h2>'.($e instanceof Std\Exception ? 'System' : 'Server').' error!</h2>';
-            $message .= '<b>'.get_class($e).': '.$e->getMessage().'</b>';
+            $message .= '<h2>System error!</h2>';
+            $message .= '<b>' . get_class($e) . ': ' . $e->getMessage().'</b>';
             $message .= '<p>---</p>';
             $message .= $e->getTraceAsString();
             $message .= '</pre>';
@@ -138,18 +146,17 @@ class Application
     /**
      * Initializing service manager & base app services (events, modules, request etc...)
      */
-    private function _init()
+    private function init()
     {
         $base = $this->basePath;
 
         // first - init services locator
-        $this->_sm = new ServiceManager\ServiceManager();
-        $this->_sm->setService('EventsManager', new Events\EventsManager());
+        $this->di = new Di\Container();
+        $this->di->setSingleton('EventsManager', new Events\EventsManager());
+        $this->di->setSingleton('Request', new Http\Request());
 
-        $this->_sm->setService('Request', new Http\Request());
-
-        $modManager = new ModulesManager($this->_sm, $base . '/modules');
-        $this->_sm->setService('ModulesManager', $modManager);
+        $modManager = new ModulesManager($this->di, $base . '/modules');
+        $this->di->setSingleton('ModulesManager', $modManager);
         $modManager->initModules();
     }
 
@@ -162,10 +169,10 @@ class Application
      * @todo Не должно приложение ничего знать о модуле main к примеру
      *       Пока тут, в качестве прототипа, но в будущем решить как поступать более гибко
      */
-    private function _route()
+    private function route()
     {
         /** @var $request Http\Request */
-        $request = $this->_sm->get('Request');
+        $request = $this->di->get('Request');
         $uri = $request->getUri();
 
         if (preg_match('#^/admin[/]?#', $uri)) {
@@ -193,19 +200,19 @@ class Application
      *
      * @return array
      *
-     * @throws \Graphite\Std\Exception
+     * @throws Exception
      */
-    private function _resolveController()
+    private function resolveController()
     {
-        /** @var Std\Properties $params */
-        $params = $this->_sm->get('Request')->getParams();
+        /** @var \Graphite\Std\Properties $params */
+        $params = $this->di->get('Request')->getParams();
 
         /** @var $modules ModulesManager */
-        $modules = $this->_sm->get('ModulesManager');
+        $modules = $this->di->get('ModulesManager');
 
         $moduleName = ucfirst($params->get('module'));
         if (!$modules->hasModule($moduleName)) {
-            throw new Std\Exception('Cant find module "'.$moduleName.'"');
+            throw new Exception('Cant find module "'.$moduleName.'"');
         }
 
         $module = $modules->getModule($moduleName);
@@ -215,19 +222,19 @@ class Application
         $ctrlClass = "\\Modules\\$moduleName\\Controller\\$ctrlName";
 
         if (!file_exists($ctrlFile)) {
-            throw new Std\Exception('Cant find controller file "'.$ctrlFile.'"');
+            throw new Exception('Cant find controller file "'.$ctrlFile.'"');
         }
 
         require_once $ctrlFile;
 
-        $ctrl = new $ctrlClass($module, $this->_sm);
+        $ctrl = new $ctrlClass($module, $this->di);
         if (!$ctrl instanceof AbstractController) {
-            throw new Std\Exception('Controller class must be instance of AbstractController');
+            throw new Exception('Controller class must be instance of AbstractController');
         }
 
         $actionName = $params->get('action') . 'Action';
         if (!method_exists($ctrl, $actionName)) {
-            throw new Std\Exception("$ctrlName does not have action $actionName");
+            throw new Exception("$ctrlName does not have action $actionName");
         }
 
         return array(
