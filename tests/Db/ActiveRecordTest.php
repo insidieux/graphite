@@ -2,6 +2,7 @@
 namespace tests\Db;
 
 use Graphite\Db\ActiveRecord\Finder;
+use Graphite\Db\ActiveRecord\Model;
 use Graphite\Db\Query\Delete;
 use Graphite\Db\Query\Insert;
 use Graphite\Db\Query\Update;
@@ -11,7 +12,7 @@ class ActiveRecordTest extends DatabaseTestCase
 {
     public function setUp()
     {
-        \Graphite\Db\ActiveRecord\Model::setConnection(self::$conn);
+        Model::setConnection(self::$conn);
     }
 
     public function testModelDefaults()

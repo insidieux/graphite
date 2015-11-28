@@ -221,11 +221,13 @@ class Model implements \JsonSerializable
     }
 
     /**
+     * @param string $attr
+     *
      * @return bool
      */
-    public function isClean()
+    public function isClean($attr = null)
     {
-        return !$this->isDirty();
+        return !$this->isDirty($attr);
     }
 
     /**
