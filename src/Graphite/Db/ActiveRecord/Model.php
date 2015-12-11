@@ -534,6 +534,16 @@ class Model implements \JsonSerializable
     }
 
     /**
+     * Same as find() with pre defined asRawResult()
+     *
+     * @return static
+     */
+    public static function findRaw()
+    {
+        return self::find()->asRawResult();
+    }
+
+    /**
      * Returns all table rows as models
      *
      * @return static[]
