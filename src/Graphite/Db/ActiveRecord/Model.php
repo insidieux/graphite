@@ -536,6 +536,16 @@ class Model implements \JsonSerializable
     }
 
     /**
+     * Same as find() with pre defined asRawResult()
+     *
+     * @return static
+     */
+    public static function findRaw()
+    {
+        return self::find()->asRawResult();
+    }
+
+    /**
      * Returns all table rows as models
      *
      * @return static[]
@@ -549,17 +559,32 @@ class Model implements \JsonSerializable
      * Search models by its PK values
      *
      * @param int|int[] $id
+     * @param bool      $indexByPk
      *
      * @return static|static[]
      */
-    public static function findPK($id)
+    public static function findPK($id, $indexByPk = false)
     {
+        $pkField = static::getPK();
+
         $models = self::find()
-            ->where([static::getPK() => $id])
+            ->where([$pkField => $id])
             ->run();
 
         if (is_array($id)) {
-            return $models;
+
+            if ($indexByPk) {
+                $indexedModels = [];
+                foreach ($models as $model) {
+                    $indexedModels[$model->$pkField] = $model;
+                }
+
+                return $indexedModels;
+
+            } else {
+                return $models;
+            }
+
         } else {
             return empty($models) ? null : reset($models);
         }
