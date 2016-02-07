@@ -548,62 +548,74 @@ class Model implements \JsonSerializable
     /**
      * Returns all table rows as models
      *
+     * @param bool $indexByPk need to index result by primary key value
+     *
      * @return static[]
      */
-    public static function findAll()
+    public static function findAll($indexByPk = false)
     {
-        return static::find()->run();
+        $models = static::find()->run();
+        if ($indexByPk){
+            $models = self::indexByPK($models);
+        }
+        return $models;
     }
 
     /**
      * Search models by its PK values
      *
      * @param int|int[] $id
-     * @param bool      $indexByPk
+     * @param bool      $indexByPk need to index result by primary key value
      *
      * @return static|static[]
      */
     public static function findPK($id, $indexByPk = false)
     {
         $pkField = static::getPK();
-
         $models = self::find()
             ->where([$pkField => $id])
             ->run();
-
-        if (is_array($id)) {
-
-            if ($indexByPk) {
-                $indexedModels = [];
-                foreach ($models as $model) {
-                    $indexedModels[$model->$pkField] = $model;
-                }
-
-                return $indexedModels;
-
-            } else {
-                return $models;
-            }
-
+        if (is_array($id) && $indexByPk) {
+            $models = self::indexByPK($models);
         } else {
-            return empty($models) ? null : reset($models);
+            $models =  empty($models) ? null : reset($models);
         }
+        return $models;
     }
 
     /**
      * Search models by array of criteria
      *
      * @param array $criteria same as \Graphite\Db\Query\AbstractQuery::where
+     * @param bool  $indexByPk need to index result by primary key value
      *
      * @return static[]
      */
-    public static function findBy(array $criteria)
+    public static function findBy(array $criteria, $indexByPk = false)
     {
         $models = self::find()
             ->where($criteria)
             ->run();
-
+        if ($indexByPk){
+            $models = self::indexByPK($models);
+        }
         return $models;
+    }
+
+    /**
+     * Reindex result array of models, use primary key value as index
+     *
+     * @param static[] $models
+     * @return array
+     */
+    protected static function indexByPK(array $models)
+    {
+        $indexedModels = [];
+        $pkField = static::getPK();
+        foreach ($models as $model) {
+            $indexedModels[$model->{$pkField}] = $model;
+        }
+        return $indexedModels;
     }
 
     /**
