@@ -548,15 +548,15 @@ class Model implements \JsonSerializable
     /**
      * Returns all table rows as models
      *
-     * @param bool $indexByPk need to index result by primary key value
+     * @param string $indexField field to index result
      *
      * @return static[]
      */
-    public static function findAll($indexByPk = false)
+    public static function findAll($indexField = null)
     {
         $models = static::find()->run();
-        if ($indexByPk){
-            $models = self::indexByPK($models);
+        if (null !== $indexField){
+            $models = self::indexBy($models, $indexField);
         }
         return $models;
     }
@@ -576,7 +576,7 @@ class Model implements \JsonSerializable
             ->where([$pkField => $id])
             ->run();
         if (is_array($id) && $indexByPk) {
-            $models = self::indexByPK($models);
+            $models = self::indexBy($models, static::getPK());
         } else {
             $models =  empty($models) ? null : reset($models);
         }
@@ -586,18 +586,18 @@ class Model implements \JsonSerializable
     /**
      * Search models by array of criteria
      *
-     * @param array $criteria same as \Graphite\Db\Query\AbstractQuery::where
-     * @param bool  $indexByPk need to index result by primary key value
+     * @param array  $criteria   same as \Graphite\Db\Query\AbstractQuery::where
+     * @param string $indexField field to index result
      *
      * @return static[]
      */
-    public static function findBy(array $criteria, $indexByPk = false)
+    public static function findBy(array $criteria, $indexField = null)
     {
         $models = self::find()
             ->where($criteria)
             ->run();
-        if ($indexByPk){
-            $models = self::indexByPK($models);
+        if (null !== $indexField){
+            $models = self::indexBy($models, $indexField);
         }
         return $models;
     }
@@ -605,15 +605,15 @@ class Model implements \JsonSerializable
     /**
      * Reindex result array of models, use primary key value as index
      *
-     * @param static[] $models
+     * @param static[] $models - array of models
+     * @param string   $field - field to index
      * @return array
      */
-    protected static function indexByPK(array $models)
+    protected static function indexBy(array $models, $field)
     {
         $indexedModels = [];
-        $pkField = static::getPK();
         foreach ($models as $model) {
-            $indexedModels[$model->{$pkField}] = $model;
+            $indexedModels[$model->{$field}] = $model;
         }
         return $indexedModels;
     }
