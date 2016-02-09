@@ -1,10 +1,17 @@
 <?php
+
 namespace Graphite\Events;
 
 use Graphite\Std;
 
+/**
+ * Class EventsManager
+ * @package Graphite\Events
+ */
 class EventsManager
 {
+    const DEFAULT_PRIORITY = 1;
+
     /**
      * Признак того, что массив подписчиков бы отсортирован по приоритету
      * @var bool
@@ -14,7 +21,7 @@ class EventsManager
     /**
      * @var array
      */
-    private $listeners = array();
+    private $listeners = [];
 
     /**
      * @param string $eventName
@@ -23,23 +30,37 @@ class EventsManager
      */
     public function getListeners($eventName = null)
     {
+        $this->sortListeners();
         if ($eventName === null) {
             return $this->listeners;
         } else {
-            return isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : array();
+            return isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : [];
         }
     }
 
     /**
-     * @param string   $eventName
+     * Sort listeners by priority
+     */
+    private function sortListeners()
+    {
+        if (false === $this->sorted) {
+            foreach ($this->listeners as $name => $events) {
+                krsort($this->listeners[$name]);
+            }
+            $this->sorted = true;
+        }
+    }
+
+    /**
+     * @param string $eventName
      * @param callable $callback
-     * @param int      $priority
+     * @param int $priority
      *
      * @return EventsManager
      *
      * @throws \Graphite\Std\Exception
      */
-    public function on($eventName, $callback, $priority = 1)
+    public function on($eventName, $callback, $priority = self::DEFAULT_PRIORITY)
     {
         if (!is_string($eventName) || empty($eventName)) {
             throw new Std\Exception(sprintf('Event name must be a string! "%s" given.', gettype($eventName)));
@@ -56,40 +77,60 @@ class EventsManager
     }
 
     /**
+     * @param SubscriberInterface $subscriber
+     *
+     * @return EventsManager
+     *
+     * @throws Std\Exception
+     */
+    public function addSubscriber(SubscriberInterface $subscriber)
+    {
+        foreach ($subscriber->getSubscribedEvents() as $eventName => $options) {
+            $isString = is_array($options);
+            if (!is_array($options) && !$isString) {
+                throw new Std\Exception(sprintf('Event subscribe options must be a string or array! "%s" given.', gettype($options)));
+            }
+            if ($isString) {
+                $options = [$options, self::DEFAULT_PRIORITY];
+            }
+            list($callback, $priority) = $options;
+            $this->on($eventName, [$subscriber, $callback], $priority);
+        }
+        return $this;
+    }
+
+    /**
      * Вызов события. Отработают все подписчики
      *
-     * @param string $name
-     * @param mixed  $sender
-     * @param array  $params
+     * @param string|Event $event
+     * @param array $params
      *
      * @return Event
      */
-    public function trigger($name, $sender = null, $params = array())
+    public function trigger($event, $params = [])
     {
-        $e = new Event($name, $sender, $params);
-
-        if (!isset($this->listeners[$name])) {
-            return $e;
+        if (false === ($event instanceof Event)) {
+            $event = new Event($event, $params);
         }
+        if ($listeners = $this->getListeners($event->getName())) {
+            $this->dispatch($listeners, $event);
+        }
+        return $event;
+    }
 
-        // sort events listeners by priority
-        if (!$this->sorted) {
-            foreach ($this->listeners as $eName => $events) {
-                krsort($this->listeners[$eName]);
+    /**
+     * Dispatching listeners for current event
+     *
+     * @param array $listeners
+     * @param Event $event
+     */
+    protected function dispatch(array $listeners, Event $event)
+    {
+        foreach ($listeners as $listener) {
+            call_user_func($listener, $event);
+            if ($event->isPropagationStopped()) {
+                break;
             }
-            $this->sorted = true;
         }
-
-        // run event listeners
-        foreach ($this->listeners[$name] as $listeners) {
-            foreach ($listeners as $listener) {
-                call_user_func($listener, $e);
-                if ($e->isPropagationStopped()) {
-                    return $e;
-                }
-            }
-        }
-
-        return $e;
     }
 }

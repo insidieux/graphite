@@ -1,19 +1,19 @@
 <?php
+
 namespace Graphite\Events;
 
 use Graphite\Std;
 
+/**
+ * Class Event
+ * @package Graphite\Events
+ */
 class Event
 {
     /**
      * @var string
      */
     protected $name;
-
-    /**
-     * @var mixed
-     */
-    protected $source;
 
     /**
      * @var \Graphite\Std\Properties
@@ -27,13 +27,11 @@ class Event
 
     /**
      * @param string $name
-     * @param mixed  $source
      * @param array  $params
      */
-    public function __construct($name, $source = null, $params = array())
+    public function __construct($name, array $params = [])
     {
         $this->setName($name);
-        $this->setSource($source);
         $this->setParams($params);
     }
 
@@ -81,22 +79,6 @@ class Event
         } else {
             throw new Std\Exception(sprintf('Event $params must be an array or Std\Properties! "%s" given', gettype($params)));
         }
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSource()
-    {
-        return $this->source;
-    }
-
-    /**
-     * @param mixed $source
-     */
-    public function setSource($source)
-    {
-        $this->source = $source;
     }
 
     /**

@@ -3,7 +3,7 @@ namespace Graphite\App;
 
 use Graphite\Di;
 use Graphite\Loader;
-use Graphite\Events;
+use Graphite\Events\EventsManager;
 use Graphite\Http;
 
 class Application
@@ -72,12 +72,12 @@ class Application
             $this->started = true;
             $this->init();
 
-            /** @var Events\EventsManager $em  */
+            /** @var EventsManager $em  */
             $em = $this->getDi()->get('EventsManager');
-            $em->trigger('app:init', $this);
+            $em->trigger(Events::APP_INIT, $this);
 
             $this->route();
-            $em->trigger('app:route', $this);
+            $em->trigger(Events::APP_ROUTE, $this);
 
             // resolve controller
             try {
@@ -112,7 +112,7 @@ class Application
 
             // resolving response
             if (!($response instanceof Http\Response)) {
-                $em->trigger('app:resolveResponse', $this, array('response' => $response));
+                $em->trigger(Events::APP_RESOLVE_RESPONSE, ['context' => $this, 'response' => $response]);
                 $response = $this->getDi()->get('Response');
             }
 
@@ -121,7 +121,7 @@ class Application
             }
 
             // sending result
-            $em->trigger('app:beforeResponse', $this, array('response' => $response));
+            $em->trigger(Events::APP_BEFORE_RESPONSE, ['context' => $this, 'response' => $response]);
             $response->send();
 
         } catch (\Exception $e) {
@@ -152,7 +152,7 @@ class Application
 
         // first - init services locator
         $this->di = new Di\Container();
-        $this->di->setSingleton('EventsManager', new Events\EventsManager());
+        $this->di->setSingleton('EventsManager', new EventsManager);
         $this->di->setSingleton('Request', new Http\Request());
 
         $modManager = new ModulesManager($this->di, $base . '/modules');
