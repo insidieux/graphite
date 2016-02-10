@@ -2,7 +2,6 @@
 
 namespace tests\Events;
 
-use tests\Fixtures\Events\TestException;
 use tests\Fixtures\Events\TestEvent;
 
 /**
