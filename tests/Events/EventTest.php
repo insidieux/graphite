@@ -36,10 +36,11 @@ class EventTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(['param1' => 'value1'], $event->getParams()->getAll());
     }
 
+    /**
+     * @expectedException \Graphite\Events\Exception
+     */
     public function testSetParamsException()
     {
-        $this->expectException(TestException::class);
-
         $event = new TestEvent('event1');
         $event->setParams('1');
         $event->setParams(1);
