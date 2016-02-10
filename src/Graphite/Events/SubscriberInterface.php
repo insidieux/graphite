@@ -15,11 +15,10 @@ interface SubscriberInterface
      *  - string name of public method in implementation class
      *  - array with event name (watch previous value) and priority
      *
-     * Example:
-     *  return [
-     *      'event1' => 'onEvent1',
-     *      'event2' => ['onEvent2', 10]
-     * ]
+     * ```
+     * [ 'event1' => 'onEvent1']            -> listen event1, call method $this->onEvent1()
+     * [ 'event2' => ['onEvent2', 10] ]     -> listen event2 with priority 10, call method $this->onEvent2()
+     * ```
      *
      * @return array
      */

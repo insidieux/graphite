@@ -26,8 +26,8 @@ class Event
     protected $propagation = true;
 
     /**
-     * @param string $name
-     * @param array  $params
+     * @param string $name Event name, used for binding listeners
+     * @param array  $params array of custom parameters, used for processing event
      */
     public function __construct($name, array $params = [])
     {
@@ -36,6 +36,8 @@ class Event
     }
 
     /**
+     * Return event name
+     *
      * @return string
      */
     public function getName()
@@ -44,20 +46,24 @@ class Event
     }
 
     /**
+     * Set event name
+     *
      * @param string $name
      *
-     * @throws \Graphite\Std\Exception
+     * @throws Exception
      */
     public function setName($name)
     {
         if (empty($name) || !is_string($name)) {
-            throw new Std\Exception('Event name must be a non empty string');
+            throw new Exception('Event name must be a non empty string');
         }
 
         $this->name = $name;
     }
 
     /**
+     * Get event params like properties object
+     *
      * @return \Graphite\Std\Properties
      */
     public function getParams()
@@ -66,9 +72,11 @@ class Event
     }
 
     /**
+     * Set custom event params
+     *
      * @param \Graphite\Std\Properties|array $params
      *
-     * @throws \Graphite\Std\Exception
+     * @throws Exception
      */
     public function setParams($params)
     {
@@ -77,12 +85,12 @@ class Event
         } elseif (is_array($params)) {
             $this->params = new Std\Properties($params);
         } else {
-            throw new Std\Exception(sprintf('Event $params must be an array or Std\Properties! "%s" given', gettype($params)));
+            throw new Exception(sprintf('Event $params must be an array or Std\Properties! "%s" given', gettype($params)));
         }
     }
 
     /**
-     *
+     * Stop event propagation
      */
     public function stopPropagation()
     {
@@ -90,6 +98,8 @@ class Event
     }
 
     /**
+     * Check event propagation. If true - stop processing event, and don't pass to listeners
+     *
      * @return bool
      */
     public function isPropagationStopped()

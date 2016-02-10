@@ -58,16 +58,16 @@ class EventsManager
      *
      * @return EventsManager
      *
-     * @throws \Graphite\Std\Exception
+     * @throws Exception
      */
     public function on($eventName, $callback, $priority = self::DEFAULT_PRIORITY)
     {
         if (!is_string($eventName) || empty($eventName)) {
-            throw new Std\Exception(sprintf('Event name must be a string! "%s" given.', gettype($eventName)));
+            throw new Exception(sprintf('Event name must be a string! "%s" given.', gettype($eventName)));
         }
 
         if (!is_callable($callback)) {
-            throw new Std\Exception(sprintf('Callback must be a valid callable! "%s" given.', gettype($callback)));
+            throw new Exception(sprintf('Callback must be a valid callable! "%s" given.', gettype($callback)));
         }
 
         $this->listeners[$eventName][$priority][] = $callback;
@@ -81,14 +81,14 @@ class EventsManager
      *
      * @return EventsManager
      *
-     * @throws Std\Exception
+     * @throws Exception
      */
     public function addSubscriber(SubscriberInterface $subscriber)
     {
-        foreach ($subscriber->getSubscribedEvents() as $eventName => $options) {
+        foreach ((array)$subscriber->getSubscribedEvents() as $eventName => $options) {
             $isString = is_array($options);
             if (!is_array($options) && !$isString) {
-                throw new Std\Exception(sprintf('Event subscribe options must be a string or array! "%s" given.', gettype($options)));
+                throw new Exception(sprintf('Event subscribe options must be a string or array! "%s" given.', gettype($options)));
             }
             if ($isString) {
                 $options = [$options, self::DEFAULT_PRIORITY];
@@ -109,7 +109,7 @@ class EventsManager
      */
     public function trigger($event, $params = [])
     {
-        if (false === ($event instanceof Event)) {
+        if (!($event instanceof Event)) {
             $event = new Event($event, $params);
         }
         if ($listeners = $this->getListeners($event->getName())) {
