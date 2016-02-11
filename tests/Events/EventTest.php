@@ -2,7 +2,8 @@
 
 namespace tests\Events;
 
-use tests\Fixtures\Events\TestEvent;
+use Graphite\Events\Event;
+use Graphite\Std\Properties;
 
 /**
  * Class EventTest
@@ -10,28 +11,34 @@ use tests\Fixtures\Events\TestEvent;
  */
 class EventTest extends \PHPUnit_Framework_TestCase
 {
+    /**
+     *
+     */
     public function testConstruct()
     {
-        $event = new TestEvent('event1');
+        $event = new Event('event1');
         $this->assertEquals('event1', $event->getName());
-        $this->assertInstanceOf('\Graphite\Std\Properties', $event->getParams());
+        $this->assertInstanceOf(Properties::class, $event->getParams());
         $this->assertEquals([], $event->getParams()->getAll());
 
-        $event = new TestEvent('event2', ['param1' => 'value1']);
+        $event = new Event('event2', ['param1' => 'value1']);
         $this->assertEquals('event2', $event->getName());
-        $this->assertInstanceOf('\Graphite\Std\Properties', $event->getParams());
+        $this->assertInstanceOf(Properties::class, $event->getParams());
         $this->assertEquals(['param1' => 'value1'], $event->getParams()->getAll());
     }
 
+    /**
+     *
+     */
     public function testAssign()
     {
-        $event = new TestEvent('event1');
+        $event = new Event('event1');
 
         $event->setName('event2');
         $this->assertEquals('event2', $event->getName());
 
         $event->setParams(['param1' => 'value1']);
-        $this->assertInstanceOf('\Graphite\Std\Properties', $event->getParams());
+        $this->assertInstanceOf(Properties::class, $event->getParams());
         $this->assertEquals(['param1' => 'value1'], $event->getParams()->getAll());
     }
 
@@ -40,16 +47,19 @@ class EventTest extends \PHPUnit_Framework_TestCase
      */
     public function testSetParamsException()
     {
-        $event = new TestEvent('event1');
+        $event = new Event('event1');
         $event->setParams('1');
         $event->setParams(1);
         $event->setParams(null);
         $event->setParams(false);
     }
 
+    /**
+     *
+     */
     public function testPropagation()
     {
-        $event = new TestEvent('event1');
+        $event = new Event('event1');
         $this->assertFalse($event->isPropagationStopped());
 
         $event->stopPropagation();

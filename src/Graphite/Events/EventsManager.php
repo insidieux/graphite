@@ -13,7 +13,8 @@ class EventsManager
     const DEFAULT_PRIORITY = 1;
 
     /**
-     * Признак того, что массив подписчиков бы отсортирован по приоритету
+     * Listeners array sorted by priority
+     *
      * @var bool
      */
     private $sorted = false;
@@ -24,7 +25,7 @@ class EventsManager
     private $listeners = [];
 
     /**
-     * @param string $eventName
+     * @param string $eventName event name filter listeners
      *
      * @return array
      */
@@ -39,11 +40,26 @@ class EventsManager
     }
 
     /**
+     * @param string $eventName event name filter listeners
+     *
+     * @return EventsManager
+     */
+    public function removeListeners($eventName = null)
+    {
+        if ($eventName === null) {
+            $this->listeners = [];
+        } else {
+            unset($this->listeners[$eventName]);
+        }
+        return $this;
+    }
+
+    /**
      * Sort listeners by priority
      */
     private function sortListeners()
     {
-        if (false === $this->sorted) {
+        if (!$this->sorted) {
             foreach ($this->listeners as $name => $events) {
                 krsort($this->listeners[$name]);
             }
@@ -52,9 +68,9 @@ class EventsManager
     }
 
     /**
-     * @param string $eventName
-     * @param callable $callback
-     * @param int $priority
+     * @param string   $eventName event name for listen
+     * @param callable $callback  function called for event
+     * @param int      $priority  priority call
      *
      * @return EventsManager
      *
@@ -86,12 +102,15 @@ class EventsManager
     public function addSubscriber(SubscriberInterface $subscriber)
     {
         foreach ((array)$subscriber->getSubscribedEvents() as $eventName => $options) {
-            $isString = is_array($options);
+            $isString = is_string($options);
             if (!is_array($options) && !$isString) {
                 throw new Exception(sprintf('Event subscribe options must be a string or array! "%s" given.', gettype($options)));
             }
             if ($isString) {
-                $options = [$options, self::DEFAULT_PRIORITY];
+                $options = [$options];
+            }
+            if (!isset($options[1])){
+                $options[1] = self::DEFAULT_PRIORITY;
             }
             list($callback, $priority) = $options;
             $this->on($eventName, [$subscriber, $callback], $priority);
@@ -100,14 +119,15 @@ class EventsManager
     }
 
     /**
-     * Вызов события. Отработают все подписчики
+     * Trigger event with custom params
+     * Can be called by passing event model
      *
      * @param string|Event $event
-     * @param array $params
+     * @param array        $params
      *
      * @return Event
      */
-    public function trigger($event, $params = [])
+    public function trigger($event, array $params = [])
     {
         if (!($event instanceof Event)) {
             $event = new Event($event, $params);
@@ -126,10 +146,12 @@ class EventsManager
      */
     protected function dispatch(array $listeners, Event $event)
     {
-        foreach ($listeners as $listener) {
-            call_user_func($listener, $event);
-            if ($event->isPropagationStopped()) {
-                break;
+        foreach ($listeners as $priority => $callbacks) {
+            foreach ($callbacks as $callback) {
+                call_user_func($callback, $event);
+                if ($event->isPropagationStopped()) {
+                    break(2);
+                }
             }
         }
     }
