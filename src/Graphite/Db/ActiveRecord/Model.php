@@ -542,21 +542,21 @@ class Model implements \JsonSerializable
      */
     public static function findRaw()
     {
-        return self::find()->asRawResult();
+        return static::find()->asRawResult();
     }
 
     /**
      * Returns all table rows as models
      *
-     * @param string $indexField field to index result
+     * @param string $indexBy field to index result
      *
      * @return static[]
      */
-    public static function findAll($indexField = null)
+    public static function findAll($indexBy = null)
     {
         $models = static::find()->run();
-        if (null !== $indexField){
-            $models = self::indexBy($models, $indexField);
+        if (null !== $indexBy){
+            $models = self::indexBy($models, $indexBy);
         }
         return $models;
     }
@@ -572,13 +572,13 @@ class Model implements \JsonSerializable
     public static function findPK($id, $indexByPk = false)
     {
         $pkField = static::getPK();
-        $models = self::find()
+        $models = static::find()
             ->where([$pkField => $id])
             ->run();
         if (is_array($id) && $indexByPk) {
             $models = self::indexBy($models, static::getPK());
         } else {
-            $models =  empty($models) ? null : reset($models);
+            $models = empty($models) ? null : reset($models);
         }
         return $models;
     }
@@ -586,18 +586,18 @@ class Model implements \JsonSerializable
     /**
      * Search models by array of criteria
      *
-     * @param array  $criteria   same as \Graphite\Db\Query\AbstractQuery::where
-     * @param string $indexField field to index result
+     * @param array  $criteria  same as \Graphite\Db\Query\AbstractQuery::where
+     * @param string $indexBy   field to index result
      *
      * @return static[]
      */
-    public static function findBy(array $criteria, $indexField = null)
+    public static function findBy(array $criteria, $indexBy = null)
     {
-        $models = self::find()
+        $models = static::find()
             ->where($criteria)
             ->run();
-        if (null !== $indexField){
-            $models = self::indexBy($models, $indexField);
+        if (null !== $indexBy){
+            $models = self::indexBy($models, $indexBy);
         }
         return $models;
     }
