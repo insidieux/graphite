@@ -1,12 +1,20 @@
 <?php
+
 namespace Graphite\Events;
 
 use Graphite\Std;
 
+/**
+ * Class EventsManager
+ * @package Graphite\Events
+ */
 class EventsManager
 {
+    const DEFAULT_PRIORITY = 1;
+
     /**
-     * Признак того, что массив подписчиков бы отсортирован по приоритету
+     * Listeners array sorted by priority
+     *
      * @var bool
      */
     private $sorted = false;
@@ -14,39 +22,68 @@ class EventsManager
     /**
      * @var array
      */
-    private $listeners = array();
+    private $listeners = [];
 
     /**
-     * @param string $eventName
+     * @param string $eventName event name filter listeners
      *
      * @return array
      */
     public function getListeners($eventName = null)
     {
+        $this->sortListeners();
         if ($eventName === null) {
             return $this->listeners;
         } else {
-            return isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : array();
+            return isset($this->listeners[$eventName]) ? $this->listeners[$eventName] : [];
         }
     }
 
     /**
-     * @param string   $eventName
-     * @param callable $callback
-     * @param int      $priority
+     * @param string $eventName event name filter listeners
+     *
+     * @return EventsManager
+     */
+    public function removeListeners($eventName = null)
+    {
+        if ($eventName === null) {
+            $this->listeners = [];
+        } else {
+            unset($this->listeners[$eventName]);
+        }
+        return $this;
+    }
+
+    /**
+     * Sort listeners by priority
+     */
+    private function sortListeners()
+    {
+        if (!$this->sorted) {
+            foreach ($this->listeners as $name => $events) {
+                krsort($this->listeners[$name]);
+            }
+            $this->sorted = true;
+        }
+    }
+
+    /**
+     * @param string   $eventName event name for listen
+     * @param callable $callback  function called for event
+     * @param int      $priority  priority call
      *
      * @return EventsManager
      *
-     * @throws \Graphite\Std\Exception
+     * @throws Exception
      */
-    public function on($eventName, $callback, $priority = 1)
+    public function on($eventName, $callback, $priority = self::DEFAULT_PRIORITY)
     {
         if (!is_string($eventName) || empty($eventName)) {
-            throw new Std\Exception(sprintf('Event name must be a string! "%s" given.', gettype($eventName)));
+            throw new Exception(sprintf('Event name must be a string! "%s" given.', gettype($eventName)));
         }
 
         if (!is_callable($callback)) {
-            throw new Std\Exception(sprintf('Callback must be a valid callable! "%s" given.', gettype($callback)));
+            throw new Exception(sprintf('Callback must be a valid callable! "%s" given.', gettype($callback)));
         }
 
         $this->listeners[$eventName][$priority][] = $callback;
@@ -56,40 +93,66 @@ class EventsManager
     }
 
     /**
-     * Вызов события. Отработают все подписчики
+     * @param SubscriberInterface $subscriber
      *
-     * @param string $name
-     * @param mixed  $sender
-     * @param array  $params
+     * @return EventsManager
+     *
+     * @throws Exception
+     */
+    public function addSubscriber(SubscriberInterface $subscriber)
+    {
+        foreach ((array)$subscriber->getSubscribedEvents() as $eventName => $options) {
+            $isString = is_string($options);
+            if (!is_array($options) && !$isString) {
+                throw new Exception(sprintf('Event subscribe options must be a string or array! "%s" given.', gettype($options)));
+            }
+            if ($isString) {
+                $options = [$options];
+            }
+            if (!isset($options[1])){
+                $options[1] = self::DEFAULT_PRIORITY;
+            }
+            list($callback, $priority) = $options;
+            $this->on($eventName, [$subscriber, $callback], $priority);
+        }
+        return $this;
+    }
+
+    /**
+     * Trigger event with custom params
+     * Can be called by passing event model
+     *
+     * @param string|Event $event
+     * @param array        $params
      *
      * @return Event
      */
-    public function trigger($name, $sender = null, $params = array())
+    public function trigger($event, array $params = [])
     {
-        $e = new Event($name, $sender, $params);
-
-        if (!isset($this->listeners[$name])) {
-            return $e;
+        if (!($event instanceof Event)) {
+            $event = new Event($event, $params);
         }
-
-        // sort events listeners by priority
-        if (!$this->sorted) {
-            foreach ($this->listeners as $eName => $events) {
-                krsort($this->listeners[$eName]);
-            }
-            $this->sorted = true;
+        if ($listeners = $this->getListeners($event->getName())) {
+            $this->dispatch($listeners, $event);
         }
+        return $event;
+    }
 
-        // run event listeners
-        foreach ($this->listeners[$name] as $listeners) {
-            foreach ($listeners as $listener) {
-                call_user_func($listener, $e);
-                if ($e->isPropagationStopped()) {
-                    return $e;
+    /**
+     * Dispatching listeners for current event
+     *
+     * @param array $listeners
+     * @param Event $event
+     */
+    protected function dispatch(array $listeners, Event $event)
+    {
+        foreach ($listeners as $priority => $callbacks) {
+            foreach ($callbacks as $callback) {
+                call_user_func($callback, $event);
+                if ($event->isPropagationStopped()) {
+                    break(2);
                 }
             }
         }
-
-        return $e;
     }
 }
