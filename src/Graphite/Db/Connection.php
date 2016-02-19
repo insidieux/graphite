@@ -195,7 +195,9 @@ class Connection
     }
 
     /**
-     * @param string $name
+     * Quote database, table, and column names
+     *
+     * @param string|Expr $name
      *
      * @return string
      */
@@ -205,12 +207,16 @@ class Connection
             return '';
         }
 
+        if ($name == '*') {
+            return $name;
+        }
+
         if ($name instanceof Expr) {
             return $name->get();
         }
 
         // try to quote name with table
-        if (false !== ($pos = strpos($name, '.'))) {
+        if (($pos = strpos($name, '.')) !== false) {
             $name = explode('.', $name);
             foreach ($name as &$val) {
                 if ($val != '*') {

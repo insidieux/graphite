@@ -16,6 +16,12 @@ class SelectTest extends DatabaseTestCase
         $expected = 'SELECT * FROM `table`';
         $actual = $this->getSelect()->from('table')->toString();
         $this->assertEquals($expected, $actual);
+
+        $actual = $this->getSelect()->from('table')->columns('*')->toString();
+        $this->assertEquals($expected, $actual);
+
+        $actual = $this->getSelect()->from('table')->columns(['*'])->toString();
+        $this->assertEquals($expected, $actual);
     }
 
     public function testColumnsString()
