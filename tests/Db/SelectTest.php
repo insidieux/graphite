@@ -1,11 +1,14 @@
 <?php
 namespace tests\Db;
 
+use Graphite\Db\Expr;
+use Graphite\Db\Query\Select;
+
 class SelectTest extends DatabaseTestCase
 {
     protected function getSelect()
     {
-        return new \Graphite\Db\Query\Select(self::$conn);
+        return new Select(self::$conn);
     }
 
     public function testColumnsWildcard()
@@ -33,6 +36,19 @@ class SelectTest extends DatabaseTestCase
     {
         $expected = 'SELECT `a` AS `A`, `b` AS `B`, `c` FROM `table`';
         $actual = $this->getSelect()->from('table')->columns(['a' => 'A', 'b' => 'B', 'c'])->toString();
+        $this->assertEquals($expected, $actual);
+    }
+
+    public function testColumnsExpr()
+    {
+        $expr = new Expr('COUNT(*)');
+
+        $expected = 'SELECT COUNT(*) FROM `table`';
+        $actual = $this->getSelect()->from('table')->columns($expr)->toString();
+        $this->assertEquals($expected, $actual);
+
+        $expected = 'SELECT `a`, COUNT(*) FROM `table`';
+        $actual = $this->getSelect()->from('table')->columns(['a', $expr])->toString();
         $this->assertEquals($expected, $actual);
     }
 
@@ -98,7 +114,7 @@ class SelectTest extends DatabaseTestCase
             'b = ?' => 10,
             'c'     => [1, 2, 3],
             'd'     => null
-        ], \Graphite\Db\Query\Select::OP_OR)->toString();
+        ], Select::OP_OR)->toString();
 
         $this->assertEquals($expected, $actual);
     }

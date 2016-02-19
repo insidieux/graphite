@@ -1,6 +1,8 @@
 <?php
 namespace Graphite\Db\Query;
 
+use Graphite\Db\Expr;
+
 /**
  * Class Select
  *
@@ -39,13 +41,16 @@ class Select extends AbstractQuery
      * ['a' => 'A', 'b' => 'B'] -> `a` as A, `b` as B
      * ```
      *
-     * @param string|string[] $columns
+     * @param string|string[]|Expr $columns
      *
      * @return Select
      */
     public function columns($columns)
     {
-        $this->cols = empty($columns) ? array() : (array) $columns;
+        if (!empty($columns)) {
+            $this->cols = is_array($columns) ? $columns : [$columns];
+        }
+
         return $this;
     }
 
