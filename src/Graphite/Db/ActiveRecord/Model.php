@@ -538,7 +538,7 @@ class Model implements \JsonSerializable
     /**
      * Same as find() with pre defined asRawResult()
      *
-     * @return static
+     * @return Finder
      */
     public static function findRaw()
     {
