@@ -1,0 +1,11 @@
+{
+    "name": "jarool/graphite",
+    "description": "very simple php components",
+    "license": "MIT",
+    "require": {
+        "php": ">=5.5.0"
+    },
+    "autoload": {
+        "psr-4": {"Graphite\\": "src/Graphite"}
+    }
+}
