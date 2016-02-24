@@ -195,7 +195,12 @@ class Connection
     }
 
     /**
-     * Quote database, table, and column names
+     * Quote database, table, or column names.
+     * ```
+     * '*'       -> '*'
+     * 'col'     -> '`col`'
+     * 'tbl.col' -> '`tbl`.`col`'
+     * ```
      *
      * @param string|Expr $name
      *
@@ -230,11 +235,13 @@ class Connection
     }
 
     /**
+     * Quote an array of database, table, or column names. quoting rules the same as Connection::quoteName
+     *
      * @param string[] $names
      *
      * @return array
      */
-    public function quoteNames($names)
+    public function quoteNames(array $names)
     {
         foreach ($names as $key => $name) {
             $names[$key] = $this->quoteName($name);
