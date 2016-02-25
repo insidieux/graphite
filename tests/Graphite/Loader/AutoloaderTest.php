@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\Loader;
+namespace tests\Graphite\Loader;
 
 use tests\Fixtures\Loader\TestAutoloader;
 

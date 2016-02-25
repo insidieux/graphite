@@ -1,23 +1,21 @@
 <?php
-$libRoot = realpath(__DIR__.'/../src');
-
-function class2File($className)
-{
-    return str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
-}
 
 // init very simple lib autoload
-spl_autoload_register(function ($className) use ($libRoot) {
-    $file = $libRoot . DIRECTORY_SEPARATOR . class2File($className);
-    if (file_exists($file)) {
-        include $file;
-    }
-});
-
-// test classes autoload
 spl_autoload_register(function ($className) {
-    $file = dirname(__DIR__) . DIRECTORY_SEPARATOR . class2File($className);
-    if (file_exists($file)) {
-        include $file;
+
+    $root = realpath(__DIR__ . DIRECTORY_SEPARATOR . '..');
+
+    $nsMap = [
+        'tests'    => $root,
+        'Graphite' => $root . DIRECTORY_SEPARATOR . 'src',
+    ];
+    
+    $namespace = strstr($className, '\\', true);
+
+    if (isset($nsMap[$namespace])) {
+        $file = $nsMap[$namespace] . DIRECTORY_SEPARATOR . str_replace('\\', DIRECTORY_SEPARATOR, $className) . '.php';
+        if (file_exists($file)) {
+            include $file;
+        }
     }
 });

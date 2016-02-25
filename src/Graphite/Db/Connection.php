@@ -251,9 +251,18 @@ class Connection
     }
 
     /**
-     * @param mixed $value
+     * Quoting value for safety insert in to query.
+     * ```
+     * 1      -> 1
+     * a      -> 'a'
+     * null   -> ''
+     * Expr   -> Expr_value
+     * [1, 2] -> '1, 2'
+     * ```
      *
-     * @return string
+     * @param int|string|Expr|array $value
+     *
+     * @return int|string
      */
     public function quoteValue($value)
     {
@@ -276,6 +285,8 @@ class Connection
     }
 
     /**
+     * Quoting array of values for safety insert in to query.
+     *
      * @param array $values
      *
      * @return array
@@ -293,29 +304,29 @@ class Connection
      * Replace "?" in a string by quoted values
      *
      * @param string           $string
-     * @param string|int|array $value
+     * @param string|int|array $binds
      *
      * @return string
      */
-    public function quoteInString($string, $value)
+    public function quoteInString($string, $binds)
     {
-        if (!is_array($value)) {
-            $value = (array) $value;
+        if (!is_array($binds)) {
+            $binds = [$binds];
         }
 
-        if (empty($string) || count($value) == 0) {
+        if (empty($string) || count($binds) == 0) {
             return $string;
         }
 
         if (preg_match_all('/\?/', $string, $matches, PREG_OFFSET_CAPTURE)) {
 
-            // если вопросик 1, а параметров массив - заменяем сразу (для IN конструкций)
+            // if only one '?' and array of binds - quote as sequence (for IN(?) constructions)
             if (count($matches[0]) == 1) {
-                $value = array($value);
+                $binds = [$binds];
             }
 
             $offsetDelta = 0;
-            foreach ($value as $index => $replace) {
+            foreach ($binds as $index => $replace) {
                 if (array_key_exists($index, $matches[0])) {
                     $quotedValue = $this->quoteValue($replace);
                     $string = substr($string, 0, $matches[0][$index][1] + $offsetDelta) .

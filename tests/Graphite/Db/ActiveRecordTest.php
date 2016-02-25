@@ -1,5 +1,5 @@
 <?php
-namespace tests\Db;
+namespace tests\Graphite\Db;
 
 use Graphite\Db\ActiveRecord\Finder;
 use Graphite\Db\ActiveRecord\Model;

@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<phpunit bootstrap="./tests/bootstrap.php">
+<phpunit bootstrap="./tests/bootstrap.php"
+         colors="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         convertErrorsToExceptions="true">
     <php>
         <var name="DB_HOST" value="127.0.0.1" />
         <var name="DB_DBNAME" value="graphite_test" />

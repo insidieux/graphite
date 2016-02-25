@@ -1,6 +1,6 @@
 <?php
 
-namespace tests\Events;
+namespace tests\Graphite\Events;
 
 use tests\Fixtures\Events\TestSubscriber;
 

@@ -1,5 +1,5 @@
 <?php
-namespace tests\Html;
+namespace tests\Graphite\Html;
 
 use Graphite\Helper\Html;
 

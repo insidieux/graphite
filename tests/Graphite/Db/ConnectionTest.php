@@ -1,11 +1,12 @@
 <?php
-namespace tests\Db;
+namespace tests\Graphite\Db;
 
 use Graphite\Db\Expr;
 use Graphite\Db\Query\Delete;
 use Graphite\Db\Query\Insert;
 use Graphite\Db\Query\Select;
 use Graphite\Db\Query\Update;
+use Graphite\Db\ResultSet;
 
 class ConnectionTest extends DatabaseTestCase
 {
@@ -39,24 +40,28 @@ class ConnectionTest extends DatabaseTestCase
 
     public function testQuoteInString()
     {
-        $expected = 'a = 1 AND b > 10 OR c IN(1, 2, 3)';
-        $actual   = self::$conn->quoteInString('a = ? AND b > ? OR c IN(?)', [1, 10, [1, 2, 3]]);
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals('a = 1',      self::$conn->quoteInString('a = ?', 1));
+        $this->assertEquals('a IN(1, 2)', self::$conn->quoteInString('a IN(?)', [1, 2]));
+
+        $this->assertEquals(
+            'a = 1 AND b > 10 OR c IN(1, 2, 3)',
+            self::$conn->quoteInString('a = ? AND b > ? OR c IN(?)', [1, 10, [1, 2, 3]])
+        );
     }
 
     public function testQuery()
     {
-
+        $this->assertInstanceOf(ResultSet::class, self::$conn->query("SELECT * FROM `test_schema`"));
     }
 
     public function testExec()
     {
-
+        $this->assertInternalType('int', self::$conn->execute("SELECT * FROM `test_schema`"));
     }
 
     public function testGetPdoInstance()
     {
-
+        $this->assertInstanceOf(\PDO::class, self::$conn->getPdoInstance());
     }
 
     public function testQueryFactories()

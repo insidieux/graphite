@@ -1,5 +1,5 @@
 <?php
-namespace tests\Db;
+namespace tests\Graphite\Db;
 
 use Graphite\Db\Expr;
 use Graphite\Db\Query\Select;

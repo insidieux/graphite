@@ -1,5 +1,5 @@
 <?php
-namespace tests\Db;
+namespace tests\Graphite\Db;
 
 use Graphite\Db\Connection;
 
@@ -18,5 +18,17 @@ abstract class DatabaseTestCase extends \PHPUnit_Framework_TestCase
             'username' => $GLOBALS['DB_USER'],
             'password' => $GLOBALS['DB_PASSWD'],
         ]);
+        
+        $sql = file_get_contents(__DIR__ . '/../../database.sql');
+        $sql = explode(';', $sql);
+
+        // create test schemas and data
+        $pdo = new \PDO("mysql:host={$GLOBALS['DB_HOST']};dbname={$GLOBALS['DB_DBNAME']}", $GLOBALS['DB_USER'], $GLOBALS['DB_PASSWD']);
+
+        foreach ($sql as $query) {
+            if (!empty($query)) {
+                $pdo->exec($query);
+            }
+        }
     }
 }
