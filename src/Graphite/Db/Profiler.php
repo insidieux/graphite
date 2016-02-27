@@ -111,7 +111,7 @@ class Profiler
             'sql'     => $sql,
             'start'   => microtime(true),
             'type'    => $this->parseType($sql),
-            'table'   => $this->parseTable($sql),
+            'table'   => SqlParser::parseTableName($sql),
             'context' => $context,
         );
 
@@ -168,46 +168,6 @@ class Profiler
     {
         $typeConst = __CLASS__ . '::QTYPE_' . strtoupper(strstr($sql, ' ', true));
         return defined($typeConst) ? constant($typeConst) : 0;
-    }
-
-    /**
-     * Parse table name from sql
-     *
-     * @param string $sql
-     *
-     * @return string
-     */
-    public function parseTable($sql)
-    {
-        $tablePattern = '`?([^ `]+)`?';
-        switch ($this->parseType($sql)) {
-            case self::QTYPE_SELECT : {
-                $pattern = "/^select(?:.*) from $tablePattern/i";
-                break;
-            }
-            case self::QTYPE_INSERT : {
-                $pattern = "/^insert(?: |LOW_PRIORITY|DELAYED|IGNORE)* into $tablePattern/i";
-                break;
-            }
-            case self::QTYPE_UPDATE : {
-                $pattern = "/^update(?: |LOW_PRIORITY|IGNORE)* $tablePattern/i";
-                break;
-            }
-            case self::QTYPE_DELETE : {
-                $pattern = "/^delete(?:.*) from $tablePattern/i";
-                break;
-            }
-            case self::QTYPE_CONNECT :
-            default: {
-                return '';
-            }
-        }
-
-        if (preg_match($pattern, $sql, $match)) {
-            return empty($match[1]) ? '' : $match[1];
-        } else {
-            return '';
-        }
     }
 
     /**

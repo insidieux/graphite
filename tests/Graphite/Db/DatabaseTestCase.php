@@ -19,7 +19,7 @@ abstract class DatabaseTestCase extends \PHPUnit_Framework_TestCase
             'password' => $GLOBALS['DB_PASSWD'],
         ]);
         
-        $sql = file_get_contents(__DIR__ . '/../../database.sql');
+        $sql = file_get_contents(__DIR__ . '/../../data/database.sql');
         $sql = explode(';', $sql);
 
         // create test schemas and data
