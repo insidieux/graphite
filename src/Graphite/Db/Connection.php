@@ -375,7 +375,7 @@ class Connection
             return ($method == 'query') ? new ResultSet($result) : $result;
 
         } catch (\PDOException $e) {
-            throw new Exception('DB QUERY ERROR: ' . $e->getMessage());
+            throw new Exception('DB QUERY ERROR: ' . $e->getMessage(), $e->getCode(), $e);
         }
     }
 
