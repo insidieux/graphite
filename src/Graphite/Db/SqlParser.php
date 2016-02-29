@@ -8,32 +8,32 @@ class SqlParser
      *
      * @param string $sql
      *
-     * @return array|bool
+     * @return array
      */
     public static function splitQueries($sql)
     {
-        if (preg_match_all('@(?<!\\\)\'|"|;@', $sql, $matches, PREG_OFFSET_CAPTURE)) {
-            $in = false;
-            $offset = 0;
-            $queries = [];
-
-            foreach ($matches[0] as $pos) {
-                if ($pos[0] == ';') {
-                    if (!$in) {
-                        $query = substr($sql, $offset, $pos[1] + 1 - $offset);
-                        $queries[] = trim($query, "\r\n\t ");
-                        $offset = $pos[1] + 1;
-                    }
-                } else {
-                    // found a quote char - toggle in-quotes state
-                    $in = !$in;
-                }
-            }
-
-            return $queries;
-        } else {
-            return false;
+        if (!preg_match_all('@(?<!\\\)\'|"|;@', $sql, $matches, PREG_OFFSET_CAPTURE)) {
+            // no quotes or ';' - single query
+            return [$sql];
         }
+
+        $inQuotes = false;
+        $offset = 0;
+        $queries = [];
+
+        foreach ($matches[0] as $pos) {
+            if ($pos[0] == ';') {
+                if (!$inQuotes) {
+                    $query = substr($sql, $offset, $pos[1] + 1 - $offset);
+                    $queries[] = trim($query, "\r\n\t ");
+                    $offset = $pos[1] + 1;
+                }
+            } else {
+                $inQuotes = !$inQuotes;
+            }
+        }
+
+        return $queries;
     }
 
     /**

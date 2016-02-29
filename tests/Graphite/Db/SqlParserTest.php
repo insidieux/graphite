@@ -9,9 +9,9 @@ class SqlParserTest extends \PHPUnit_Framework_TestCase
     public function testSplitQueries()
     {
         $sql = file_get_contents('./tests/data/parse.sql');
-        $queries = SqlParser::splitQueries($sql);
 
-        $this->assertCount(3, $queries);
+        $this->assertCount(3,             SqlParser::splitQueries($sql));
+        $this->assertEquals(['select 1'], SqlParser::splitQueries('select 1'));
     }
 
     public function testParseTableName()
